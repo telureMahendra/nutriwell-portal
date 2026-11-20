@@ -1,0 +1,484 @@
+<?php
+
+namespace App\Controllers\Apis;
+
+use CodeIgniter\RESTful\ResourceController;
+
+class Plans extends ResourceController
+{
+    public function __construct()
+    {
+        $this->profile_info_model = model('App\Models\Profile_info_model', false);
+        $this->client_login_model = model('App\Models\Client_login_model', false);
+        $this->plans_model = model('App\Models\Plans_model', false);
+    }
+
+    public function headers()
+    {
+        $this->response->setHeader('Access-Control-Allow-Origin', '*');
+        $this->response->setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+        $this->response->setHeader('Access-Control-Max-Age', '1000');
+        $this->response->setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        $this->response->setHeader('Content-Type', 'application/json');
+    }
+
+    //view list of plans by category 
+    public function plans_list()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+
+        $tocken = trim($json_data->tocken);
+        $category = trim($json_data->category);
+        if (!empty($tocken) && !empty($category)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+
+                $plansList = $this->plans_model->getAllplan($category, $check_login[0]->client_id);
+                if (!empty($plansList)) {
+                    foreach ($plansList as $key => $value) {
+                        if ($value->booking_id == null) {
+                            $plansList[$key]->planbooked = "No";
+                        } else {
+                            $plansList[$key]->planbooked = "Yes";
+                        }
+                        $plansList[$key]->background_url = base_url() . "public/uploads/plan/background/";
+                        $plansList[$key]->header_url = base_url() . "public/uploads/plan/header/";
+                    }
+                    $response = ['status' => true, 'msg' => 'Get plans Successfully', 'data' => $plansList];
+                } else {
+                    $response = ['status' => false, 'msg' => 'Plans Not Found'];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Found'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'User Not Login'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    //view plan details with its features 
+    public function view_plans()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+
+        $tocken = trim($json_data->tocken);
+        $plan_id = trim($json_data->plan_id);
+        if (!empty($tocken) && !empty($plan_id)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $planData = $this->plans_model->getAllPlans('', $plan_id);
+
+                if (!empty($planData)) {
+                    $planData[0]->background_img_url = base_url() . "public/uploads/plan/background";
+                    $planData[0]->header_img_url = base_url() . "public/uploads/plan/header";
+                    $planFeatures = $this->plans_model->getPlanFeatures($plan_id);
+                    foreach ($planFeatures as $key => $row) {
+                        $planFeatures[$key]->feature_image_url = base_url() . "public/uploads/plan/feature/";
+                    }
+                    if (!empty($planFeatures)) {
+                        $planDetails = [
+                            'plan_data' => $planData,
+                            'plan_features' => $planFeatures
+                        ];
+                        $response = ['status' => true, 'msg' => 'Get plans Successfully', 'data' => $planDetails];
+                    } else {
+                        $response = ['status' => false, 'msg' => 'Plan Features Not Found'];
+                    }
+                } else {
+                    $response = ['status' => false, 'msg' => 'Plan Not Found'];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Found'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'User Not Login'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    //add new booking from city n language
+    public function plan_booking()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        $plan_id = trim($json_data->plan_id);
+        $city_id = trim($json_data->city_id);
+        $language = trim($json_data->language);
+        if (!empty($tocken) && !empty($plan_id) && !empty($city_id) && !empty($language)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $planData = $this->plans_model->getAllPlans('', $plan_id);
+                if (!empty($planData)) {
+
+                    $date = date('Y-m-d');
+                    $plan_duration = $planData[0]->validaty;
+                    $month = explode(' ', $plan_duration);
+                    //$plan_expiry_date = strtotime(date("Y-m-d", strtotime($date)) . "+".$month[0]." months");
+
+                    $plan_expiry_date = date('Y-m-d', strtotime($date . ' + ' . $month[0] . ' months'));
+                    //$formatted_expiry_date = date('Y-m-d', $plan_expiry_date);
+
+
+                    $insert_data = [
+                        'plan_id' => $plan_id,
+                        'city_id' => $city_id,
+                        'language' => $language,
+                        'plan_duration' => $planData[0]->validaty,
+                        'subtotal' => $planData[0]->price,
+                        'status' => 'Processing',
+                        'date' => date('Y-m-d'),
+                        'plan_expiry_date' => $plan_expiry_date,
+                        'client_id' => $check_login[0]->client_id,
+                        'updated_by' => $check_login[0]->client_id,
+                        'updated_on' => date('Y-m-d'),
+                        'created_by' => $check_login[0]->client_id,
+                        'created_on' => date('Y-m-d'),
+                    ];
+                    $booking_id = $this->plans_model->addBooking($insert_data);
+                    if ($booking_id > 0) {
+                        $response = ['status' => true, 'msg' => 'booking data', 'data' => $booking_id];
+                    } else {
+                        $response = ['status' => false, 'msg' => 'Failed to add booking'];
+                    }
+                } else {
+                    $response = ['status' => false, 'msg' => 'Plan Not Found'];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    //update booking and complte payment method 
+    public function booking_payment()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        $booking_id = trim($json_data->booking_id);
+        $subtotal = trim($json_data->subtotal);
+        $tax_rate = trim($json_data->tax_rate);
+        $taxable_amount = trim($json_data->taxable_amount);
+        $convenience_fee =  trim($json_data->convenience_fee);
+        $total_amount = trim($json_data->total_amount);
+        $payment = trim($json_data->payment);
+        //$convenience_fee = trim($json_data->convenience_fee); 
+
+
+
+
+        //if (!empty($tocken) && !empty($subtotal) && !empty($tax_rate) && !empty($taxable_amount) && !empty($booking_id) && !empty($total_amount)) {
+        if (!empty($tocken) && !empty($subtotal) && !empty($booking_id) && !empty($total_amount)) {
+
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $bookingDetails = $this->plans_model->getBookingDetailsBeforePayment($booking_id);
+
+                $plan_duration = trim($bookingDetails[0]->plan_duration);
+                $date = date('Y-m-d');
+                $plan_duration = "3 Month";
+                $month = explode(' ', $plan_duration);
+                $plan_expiry_date = strtotime(date("Y-m-d", strtotime($date)) . "+" . $month[0] . " months");
+                $formatted_expiry_date = date('Y-m-d', $plan_expiry_date);
+
+                $update_data = [
+                    'booking_id' => $booking_id,
+                    'subtotal' => $subtotal,
+                    'tax_rate'  => $tax_rate,
+                    'taxable_amount'   => $taxable_amount,
+                    'convenience_fee'  => $convenience_fee,
+                    'total_amount' => $total_amount,
+                    'payment' => $payment,
+                    'date' => $date,
+                    // 'plan_expiry_date' => $formatted_expiry_date,
+                    'status' => 'Active',
+                    'updated_by' => $check_login[0]->client_id,
+                    'updated_on' => date('Y-m-d'),
+                ];
+                $booking_id = $this->plans_model->updateBooking($update_data, $booking_id);
+                if ($booking_id == 1) {
+                    $response = ['status' => true, 'msg' => 'Booking Confirm Successfully', 'data' => $booking_id];
+                } else {
+                    $response = ['status' => false, 'msg' => 'Failed to Confirm Booking'];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    //update booking and complte payment method 
+    public function booking_payment_bkp()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        $booking_id = trim($json_data->booking_id);
+        $subtotal = trim($json_data->subtotal);
+        $coupon_id = trim($json_data->coupon_id);
+        $total_amount = trim($json_data->total_amount);
+        $discount = trim($json_data->discount);
+        if (!empty($tocken) && !empty($subtotal) && !empty($coupon_id) && !empty($total_amount) && !empty($discount) && !empty($booking_id)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $update_data = [
+                    'booking_id' => $booking_id,
+                    'coupon_id' => $coupon_id,
+                    'subtotal' => $subtotal,
+                    'total_amount' => $total_amount,
+                    'discount' => $discount,
+                    'status' => 'Active',
+                    'updated_by' => $check_login[0]->client_id,
+                    'updated_on' => date('Y-m-d'),
+                ];
+                $booking_id = $this->plans_model->updateBooking($update_data, $booking_id);
+                if ($booking_id == 1) {
+                    $response = ['status' => true, 'msg' => 'Booking Confirm Successfully', 'data' => $booking_id];
+                } else {
+                    $response = ['status' => false, 'msg' => 'Failed to Confirm Booking'];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    //view list of city and language to buy a plan
+    public function booking_details()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        if (!empty($tocken)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $cityList = $this->plans_model->getAllList('city');
+                if (!empty($cityList)) {
+                    $data['city_list'] = $cityList;
+                    $languageList = $this->plans_model->getAllList('language');
+                    if (!empty($languageList)) {
+                        foreach ($languageList as $key => $value) {
+                            $languageList[$key]->language_url = base_url() . "public/uploads/plan/language/";
+                            $languageList[$key]->language_img = "user-check.jpg";
+                        }
+                        $data['language_list'] = $languageList;
+                        $response = ['status' => true, 'msg' => 'Get All Data Successfully', 'data' => $data];
+                    } else {
+                        $response = ['status' => false, 'msg' => 'Language Not Found', 'data' => $data];
+                    }
+                } else {
+                    $response = ['status' => false, 'msg' => 'City Not Found', 'data' => $cityList];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    //View booking payment details
+    public function payment_details()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $ccavenueDetails = [];
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        $booking_id = trim($json_data->booking_id);
+        //$plan_id = trim($json_data->plan_id);
+        if (!empty($tocken) && !empty($booking_id)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $plan_id = $this->plans_model->getPlanID($booking_id);
+                //$data['plan_id'] = $plan_id[0]->plan_id;
+                $planDetails = $this->plans_model->getAllPlans('', $plan_id[0]->plan_id);
+                $checkBookingPayment = $this->plans_model->checkBookingPayment($booking_id);
+                if ($checkBookingPayment[0]->payment == 'No') {
+                    $bookingDetails = $this->plans_model->getBookingDetailsBeforePayment($booking_id);
+                    if ($bookingDetails[0]->coupon_id > 0) {
+                        $data['coupenApplied'] = "Yes";
+                    } else {
+                        $data['coupenApplied'] = "No";
+                    }
+
+                    $subtotal = $bookingDetails[0]->subtotal;
+                    $discount = $bookingDetails[0]->discount;
+                    $amount = $subtotal - $discount;
+                    $tax_rate = 0;
+                    $taxable_amount = ($amount * $tax_rate) / 100;
+                    //$convenience_fee = ($amount * 1) / 100;
+                    $convenience_fee = 0;
+                    $final_amount = $amount + $taxable_amount + $convenience_fee;
+
+                    $bookingDetails[0]->tax_rate = $tax_rate;
+                    $bookingDetails[0]->taxable_amount = round($taxable_amount);
+                    $bookingDetails[0]->convenience_fee = round($convenience_fee);
+                    $bookingDetails[0]->total_amount = round($final_amount);
+
+
+                    $order_id = 'ORDER_' . sprintf("%08d", $booking_id);
+                    $tid = sprintf("%08d", $booking_id);
+
+                    $str = 'tid=' . $tid . '&merchant_id=' . _merchant_id . '&redirect_url=' . _redirect_url . '&cancel_url=' . _cancel_url . '&language=' . _language . '&currency=' . _currency . '&order_id=' . $order_id . '&amount=' . round($final_amount);
+                    $enc_val = encrypt($str, _working_key);
+
+                    $ccavenueDetails["tid"] = $tid;
+                    $ccavenueDetails["merchant_id"] = _merchant_id;
+                    $ccavenueDetails["redirect_url"] = _redirect_url;
+                    $ccavenueDetails["cancel_url"] = _cancel_url;
+                    $ccavenueDetails["language"] = _language;
+                    $ccavenueDetails["currency"] = _currency;
+                    $ccavenueDetails["order_id"] = $order_id;
+                    $ccavenueDetails["amount"] = round($final_amount);
+                    $ccavenueDetails["str"] = $str;
+                    $ccavenueDetails["enc"] = $enc_val;
+
+                    $ccD = $this->plans_model->update_enc_val($booking_id, array("order_id" => $order_id, "enc_val" => $enc_val));
+                } elseif ($checkBookingPayment[0]->payment == 'Yes') {
+                    $bookingDetails = $this->plans_model->getBookingDetailsAfterPayment($booking_id);
+                    if ($bookingDetails[0]->coupon_id > 0) {
+                        $data['coupenApplied'] = "Yes";
+                    } else {
+                        $data['coupenApplied'] = "No";
+                    }
+                }
+
+                if (!empty($planDetails)) {
+                    $data['planDetails'] = $planDetails;
+                    $data['bookingDetails'] = $bookingDetails;
+                    $data['ccavenueDetails'] = $ccavenueDetails;
+                    $response = ['status' => true, 'msg' => 'Booking Details', 'data' => $data];
+                } else {
+                    $response = ['status' => false, 'msg' => 'Booking Details Not Found', 'data' => $data];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+
+    //view payment details of plan that i want to subscribe
+    public function payment_details_bkp()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        $plan_id = trim($json_data->plan_id);
+        if (!empty($tocken)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $planData = $this->plans_model->getAllPlans('', $plan_id);
+                if (!empty($planData)) {
+                    $response = ['status' => true, 'msg' => 'Get Plan Details Successfully', 'data' => $planData];
+                } else {
+                    $response = ['status' => false, 'msg' => 'Plan Not Found', 'data' => $planData];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+
+    // view plans list that i have book/ subscribed
+    public function subscription()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+
+        if (!empty($tocken)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+            if (!empty($check_login)) {
+                $bookingList = $this->plans_model->getBookingList($check_login[0]->client_id);
+                if (!empty($bookingList)) {
+
+                    foreach ($bookingList as $key => $value) {
+                        $bookingList[$key]->background_img_url = base_url() . "public/uploads/plan/background";
+                        $bookingList[$key]->header_img_url = base_url() . "public/uploads/plan/header";
+                    }
+
+                    $response = ['status' => true, 'msg' => 'Get Plan Details Successfully', 'data' => $bookingList];
+                } else {
+                    $response = ['status' => false, 'msg' => 'Plan Not Found', 'data' => $bookingList];
+                }
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Login'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'Enter Valid Data'];
+        }
+        return $this->response->setJSON($response);
+    }
+        public function ccavenue_decrypt()
+    {
+        $this->headers();
+        $this->_request = file_get_contents("php://input");
+        $this->_request = implode("", explode("\\", $this->_request));
+
+        $json_data = $this->request->getJSON();
+        $tocken = trim($json_data->tocken);
+        $encrypt_value = trim($json_data->encrypt_value);
+        if (!empty($tocken) && !empty($encrypt_value)) {
+            $check_login = $this->client_login_model->checkTocken($tocken);
+
+            $check_login = true;
+            if (!empty($check_login)) {
+                $decryptText = decrypt($encrypt_value, _working_key);
+                $response = ['status' => true, 'msg' => 'Decrypt Successfully', 'data' => $decryptText];
+            } else {
+                $response = ['status' => false, 'msg' => 'User Not Found'];
+            }
+        } else {
+            $response = ['status' => false, 'msg' => 'User Not Login'];
+        }
+        return $this->response->setJSON($response);
+    }
+}

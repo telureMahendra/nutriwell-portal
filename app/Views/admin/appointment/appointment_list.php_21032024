@@ -1,0 +1,227 @@
+<link href="<?= base_url(); ?>public/assets/admin/pages/css/tasks.css" rel="stylesheet" type="text/css" />
+
+<?= $this->extend("layouts/admin_default"); ?>
+<?= $this->section("content"); ?>
+<?php $validation =  \Config\Services::validation(); ?>
+
+<style>
+    .pagination {
+        margin: 20px 0;
+        float: left;
+    }
+
+    .pager {
+        float: right;
+    }
+</style>
+<div class="content">
+    <div class="page-bar">
+        <?= $breadcrumb; ?>
+    </div>
+    <div class="page-container">
+        <div class="tab-pane" id="tab_1">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet box grey-cascade">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <?= $pagetitle ?>
+                            </div>
+                        </div>
+                        <div class="portlet-body">
+                            <div class="table-toolbar">
+                                <?php
+                                $attributes = array('method' => 'get', 'class' => 'login-form', 'id' => 'loginform');
+                                echo form_open('appointment', $attributes);
+                                ?>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label">From</label>
+                                            <input type="date" class="form-control" name="fromdate" id="fromdate" required="required" value="<?= $fromdate; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label">To</label>
+                                            <input type="date" class="form-control" name="todate" required="required" value="<?php echo $todate; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label">&nbsp;&nbsp;</label>
+                                        <input type="text" class="form-control" name="search" placeholder="Slot / Client / Mobile" value="<?php echo $search; ?>">
+                                    </div>
+                                    <div class="col-md-6" align="right">
+                                        <label class="control-label">&nbsp;&nbsp;</label>
+                                        <div class="form-group">
+                                            <div>
+                                                <input type="submit" name="submit" value="Filter" class="btn green" /> &nbsp;&nbsp;
+                                                <a href="<?= base_url(); ?>appointment/?download=true&<?php echo $_SERVER["QUERY_STRING"]; ?>"><span id="sample_editable_1_new" class="btn green"> &nbsp;&nbsp; <i class="fa fa-download"></i> Download &nbsp;&nbsp;</span></a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                    <?= form_close(); ?>
+
+                                </div>
+                                <table class="table table-striped table-bordered table-hover" id="sample_1">
+                                    <thead>
+                                        <tr>
+                                            <th width="6%">
+                                                Sr. No.
+                                            </th>
+                                            <th width="10%">
+                                                Date
+                                            </th>
+                                            <th width="10%">
+                                                Slot
+                                            </th>
+                                            <th width="20%">
+                                                Client Name
+                                            </th>
+                                            <th width="20%">
+                                                Client Mobile
+                                            </th>
+                                            <th width="20%">
+                                                Plan Name
+                                            </th>
+                                            <th width="20%">
+                                                Mentor Name
+                                            </th>
+                                            <th width="20%">
+                                                Designation
+                                            </th>
+
+                                            <th width="20%">
+                                                Experience
+                                            </th>
+                                            <th width="20%">Comment</th>
+                                            <th width="8%">
+                                                Status
+                                            </th>
+                                            <th width="8%">
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        if (count($appointmentList) > 0) {
+                                            $k = 1;
+                                            foreach ($appointmentList as $row) {
+                                        ?>
+                                                <tr class="odd gradeX">
+                                                    <td><?= $k; ?></td>
+                                                    <td><?= $row->date; ?></td>
+                                                    <td><?= $row->slot; ?></td>
+                                                    <td><?= $row->client_name; ?></td>
+                                                    <td><?= $row->client_mobile_number; ?></td>
+                                                    <td><?= $row->name; ?></td>
+                                                    <td><?= $row->doctor_name; ?></td>
+                                                    <td><?= $row->designation; ?></td>
+                                                    <td><?= $row->years . ' year & ' . $row->month . ' months'; ?></td>
+                                                    <td><?= $row->comment; ?></td>
+                                                    <td><?php
+
+                                                        //$s = explode(" ",$row->slot);
+                                                        //$slot = $row->date.' '. $s[0].':00 '.$s[1];
+
+                                                        //print_r($slot);
+
+                                                        //echo  $row->date.' '.str_replace('pm','00 ' $row->slot;
+
+                                                        //echo date('Y-m-d H:i:s a');
+
+                                                        //if(strtotime(date('Y-m-d h:m:s a')) >= strtotime($slot)){
+
+                                                        if (strtotime(date('Y-m-d')) > strtotime($row->date)) {
+                                                            echo 'Expired';
+                                                        } else {
+                                                            echo $row->status;
+                                                        } ?></td>
+                                                    <td>
+                                                        <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'close')) { ?>
+                                                            <a href="javascript:void(0)" onclick="close_appointment(<?= $row->appointment_id; ?>)" class="btn default btn-xs red" title="Delete Appointment" alt="Delete Appointment"><i class="fa fa-trash"></i></a>
+                                                        <?php } ?>
+
+                                                        <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'listcomment')) { ?>
+                                                            <a href="<?= base_url(); ?>appointment/comment/<?= $row->appointment_id; ?>" class="btn default btn-xs yellow" title="Comment" alt="Comment"><i class="fa fa-comment"></i></a>
+                                                        <?php } ?>
+
+                                                        <?php //if (CheckAccess(class_basename(service('router')->controllerName()), 'listcomment')) { 
+                                                        ?>
+                                                        <a href="<?= base_url(); ?>appointment/clientdashboard/<?= $row->client_id; ?>" class="btn default btn-xs info" title="Dashboard" alt="Dashboard"><i class="fa fa-dashboard"></i></a>
+                                                        <?php //}
+                                                        ?>
+
+                                                    </td>
+                                                </tr>
+                                        <?php
+                                                $k++;
+                                            }
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+
+
+                                <?php
+                                $pager = \Config\Services::pager();
+                                if ($pager) :
+                                    $pagi_path = 'appointment';
+                                    $pager->setPath($pagi_path);
+                                ?>
+                                    <div class="row">
+                                        <div class="col-md-6" style="text-align:center;">
+                                            <?php echo $pager->links(); ?>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <?php echo $pager->simpleLinks(); ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="close_appointment" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Close Appointment</h4>
+                </div>
+                <div class="modal-body">
+                    Are you sure to close this Appointment?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default" id="yes">Yes</button>
+                    <button type="button" class="btn default" id="no" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function close_appointment(appointment_id) {
+            $('#close_appointment').modal();
+            $('#close_appointment #yes').click(function() {
+                var url = '<?= base_url('appointment/close') ?>';
+                $.post(url, {
+                    appointment_id: appointment_id,
+                }, function(responseText) {
+                    if (responseText == 1) {
+                        location.href = '<?= base_url('appointment/') ?>';
+                    } else {
+                        alert('Something went wrong with your request');
+                    }
+                });
+            });
+        }
+    </script>
+    <?= $this->endSection(); ?>

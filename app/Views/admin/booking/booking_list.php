@@ -1,0 +1,300 @@
+<link href="<?= base_url(); ?>public/assets/admin/pages/css/tasks.css" rel="stylesheet" type="text/css" />
+
+<?= $this->extend("layouts/admin_default"); ?>
+<?= $this->section("content"); ?>
+<?php $validation =  \Config\Services::validation(); ?>
+
+<style>
+    .pagination {
+        margin: 20px 0;
+        float: left;
+    }
+
+    .pager {
+        float: right;
+    }
+</style>
+
+<div class="content">
+    <div class="page-bar">
+        <?= $breadcrumb; ?>
+    </div>
+    <div class="page-container">
+        <div class="tab-pane" id="tab_1">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet box grey-cascade">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <?= $pagetitle ?>
+                            </div>
+                        </div>
+                        <div class="portlet-body">
+                            <div class="table-toolbar">
+                                <?php
+                                $attributes = array('method' => 'get', 'class' => 'login-form', 'id' => 'loginform');
+                                echo form_open('booking', $attributes);
+                                ?>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label">From</label>
+                                            <input type="date" class="form-control" name="fromdate" id="fromdate" required="required" value="<?= $fromdate; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label">To</label>
+                                            <input type="date" class="form-control" name="todate" required="required" value="<?php echo $todate; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label">Plan</label>
+                                        <?= form_dropdown('plan_id', $allPlan, $plan_id, 'class="select2me form-control" id="plan_id" tabindex="0"'); ?>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label">City</label>
+                                        <?= form_dropdown('city_id', $allCity, $city_id, 'class="select2me form-control" id="city_id" tabindex="0"'); ?>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label">Language</label>
+                                        <?= form_dropdown('language', $allLanguage, $language, 'class="select2me form-control" id="language" tabindex="0"'); ?>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="control-label">&nbsp;&nbsp;</label>
+                                        <input type="text" class="form-control" name="search" placeholder="Search" value="<?php echo $search; ?>">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12" align="right">
+                                        <div class="form-group">
+                                            <div>
+                                                <input type="submit" name="submit" value="Filter" class="btn green" />
+                                                <a href="<?= base_url(); ?>booking/?download=true&<?php echo $_SERVER["QUERY_STRING"]; ?>"><span id="sample_editable_1_new" class="btn green"> &nbsp;&nbsp; <i class="fa fa-download"></i> Download &nbsp;&nbsp;</span></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?= form_close(); ?>
+                                </div>
+                            </div>
+                            <!-- Summary Totals -->
+                            <div class="row" style="margin-bottom:15px;">
+                                <div class="col-md-4">
+                                    <div class="portlet light bordered" style="margin-bottom:0; text-align:center; padding:12px 10px;">
+                                        <div style="font-size:13px; color:#888; font-weight:600;">Total Actual Amount</div>
+                                        <div style="font-size:22px; font-weight:700; color:#5b9bd1;">&#8377; <?= number_format($totalSubtotal, 2) ?></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="portlet light bordered" style="margin-bottom:0; text-align:center; padding:12px 10px;">
+                                        <div style="font-size:13px; color:#888; font-weight:600;">Total Discount Given</div>
+                                        <div style="font-size:22px; font-weight:700; color:#e87d3e;">&#8377; <?= number_format($totalDiscount, 2) ?></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="portlet light bordered" style="margin-bottom:0; text-align:center; padding:12px 10px;">
+                                        <div style="font-size:13px; color:#888; font-weight:600;">Total Amount Received</div>
+                                        <div style="font-size:22px; font-weight:700; color:#36b37e;">&#8377; <?= number_format($totalAmount, 2) ?></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <table class="table table-striped table-bordered table-hover" id="myTable">
+                                <thead>
+                                    <tr>
+                                        <th width="6%"> Sr. No. </th>
+                                        <th width="12%"> Client </th>
+                                        <th width="9%"> Plan </th>
+                                        <th width="8%"> Start Date </th>
+                                        <th width="8%"> End Date </th>
+                                        <th width="9%"> Duration </th>
+                                        <th width="5%"> Status </th>
+                                        <th width="5%"> Amount</th>
+                                        <th width="12%"> Mentor</th>
+                                        <th width="12%"> Action </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (count($bookingList) > 0) {
+                                        $k = 1;
+                                        foreach ($bookingList as $row) {
+
+                                            // print'<pre>';
+                                            // print_r($bookingList);
+                                            // die();
+
+
+                                            $status = $row->status;
+                                            // if ($row->plan_expiry_date != "0000-00-00") {
+
+                                            //     $startDate = strtotime(date('Y-m-d'));
+
+                                            //     $endDate = strtotime($row->plan_expiry_date);
+
+
+                                            //     if ($startDate > $endDate) {
+                                            //         $status = 'Expired';
+                                            //     }
+                                            // }
+
+
+
+
+                                    ?>
+                                            <tr class="odd gradeX">
+                                                <td><?= $k; ?></td>
+                                                <td><?= $row->client_name; ?></td>
+                                                <td><?= $row->name; ?></td>
+                                                <td><?php echo date('d/m/Y', strtotime($row->date)); ?></td>
+                                                <td><?= (($row->plan_expiry_date != "0000-00-00") ? date('d/m/Y', strtotime($row->plan_expiry_date)) : ''); ?></td>
+                                                <td><?= $row->plan_duration; ?></td>
+                                                <td><?= $status; ?></td>
+                                                <td style="text-align: right;"><?= $row->total_amount; ?></td>
+                                                <td>
+                                                    <?php if (!empty($row->doctor_name)): ?>
+                                                        <span class="label label-success" style="font-size:11px;padding:4px 7px;">
+                                                            <i class="fa fa-user-md"></i> <?= esc($row->doctor_name); ?>
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="label label-default" style="font-size:11px;padding:4px 7px;">Not Assigned</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'view')) { ?>
+                                                        <a href="<?= base_url(); ?>booking/view/<?= $row->booking_id; ?>" class="btn default btn-xs purple" title="view Booking" alt="view Booking"><i class="fa fa-eye"></i></a>
+                                                    <?php } ?>
+                                                    <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'close')) { ?>
+                                                        <a href="javascript:void(0)" onclick="close_booking(<?= $row->booking_id; ?>)" class="btn default btn-xs red" title="Delete Booking" alt="Delete Booking"><i class="fa fa-trash"></i></a>
+                                                    <?php } ?>
+                                                    <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'viewpdf')) { ?>
+                                                        <a href="<?= base_url("booking/viewpdf/" . $row->booking_id); ?>" class="btn default btn-xs yellow" title="View PDF" alt="View PDF" target="_blank"><i class="fa fa-file-pdf"></i></a>
+                                                    <?php } ?>
+                                                    <?php if ($row->status == 'Active'): ?>
+                                                        <?php if (!empty($row->doctor_name)): ?>
+                                                            <a href="javascript:void(0)" onclick="assign_doctor(<?= $row->booking_id; ?>)" class="btn default btn-xs blue" title="Change Mentor" alt="Change Mentor"><i class="fa fa-pencil"></i></a>
+                                                        <?php else: ?>
+                                                            <a href="javascript:void(0)" onclick="assign_doctor(<?= $row->booking_id; ?>)" class="btn default btn-xs green" title="Assign Mentor" alt="Assign Mentor"><i class="fa fa-plus"></i></a>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                    <?php
+                                            $k++;
+                                        }
+                                    }
+                                    ?>
+                                </tbody>
+
+                            </table>
+
+                            <?php
+                            $pager = \Config\Services::pager();
+                            if ($pager) :
+                                $pagi_path = 'booking';
+                                $pager->setPath($pagi_path);
+                            ?>
+                                <div class="row">
+                                    <div class="col-md-6" style="text-align:center;">
+                                        <?php echo $pager->links(); ?>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <?php echo $pager->simpleLinks(); ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="close_booking" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Close Booking</h4>
+            </div>
+            <div class="modal-body">
+                Are you sure to close this booking?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" id="yes">Yes</button>
+                <button type="button" class="btn default" id="no" data-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="assign_doctor" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Assign Mentor</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label">Mentor Name<span class="required" aria-required="true"> *</span></label>
+                                <?= form_dropdown('doctor_id', $allDoctor, '', 'class="select2me form-control" id="doctor_id" tabindex="0"'); ?>
+                                <span class="help-block help-block-error" for="dropdown"><?= $validation->showError('select') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default" id="yes">Yes</button>
+                    <button type="button" class="btn default" id="no" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function assign_doctor(booking_id) {
+        $('#assign_doctor').modal();
+        $('#assign_doctor #yes').click(function() {
+            var doctor_id = $('#doctor_id').val();
+            $.ajax({
+                url: '<?= base_url('booking/assign_doctor') ?>',
+                type: 'POST',
+                data: {
+                    booking_id: booking_id,
+                    doctor_id: doctor_id
+                },
+                success: function(response) {
+                    if (response == 1) {
+                        //location.href = '<?= base_url('booking/') ?>';
+                        window.location = location.href;
+
+                    } else {
+                        alert('Something went wrong with your request');
+                    }
+                }
+            });
+        });
+    }
+
+    function close_booking(booking_id) {
+        $('#close_booking').modal();
+        $('#close_booking #yes').click(function() {
+
+            var url = '<?= base_url('booking/close') ?>';
+
+            $.post(url, {
+                booking_id: booking_id,
+            }, function(responseText) {
+                if (responseText == 1) {
+                    //location.href = '<?= base_url('booking/') ?>';
+                    window.location = location.href;
+                } else {
+                    alert('Something went wrong with your request');
+                }
+            });
+        });
+    }
+</script>
+<?= $this->endSection(); ?>

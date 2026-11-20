@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+use CodeIgniter\Model;
+
+class Clients_model extends Model
+{
+    public function getAllClients()
+    {
+        $builder = $this->db->table('client_profile');
+        $builder->select('*');
+        $builder->where('status', 'Active');
+        $query = $builder->get();
+
+        if ($query->getResult()) {
+            return $query->getResult();
+        } else {
+            return [];
+        }
+    }
+
+    public function getClients($tablename, $condition, $like,$perPage = null, $offset = null)
+    {
+        $builder = $this->db->table($tablename.' AS C');
+        $builder->select('C.*,CONCAT(U.first_name," ",U.last_name   ) as sales_agent, B.booking_id,B.bookStatus');
+        $builder->join('users AS U','C.uid = U.uid','left');
+
+        $builder->join('(select booking_id,client_id,status as bookStatus from booking group by client_id order by booking_id DESC) as B','C.client_id=B.client_id','left');
+        $builder->where('C.status','Active');
+        $builder->where($condition);
+        if (!empty($like)) {
+            $builder->groupStart();
+            $builder->orLike('C.client_name', $like['client_name']);
+            $builder->orLike('C.client_email', $like['client_name']);
+            $builder->orLike('C.client_mobile_number', $like['client_mobile_number']);
+            $builder->groupEnd();
+        }
+        $builder->orderBy('C.client_id', 'DESC');
+        $builder->limit($perPage, $offset);
+        $query = $builder->get();
+        //echo $this->db->getLastQuery();
+        if ($query->getResult()) {
+            return $query->getResult();
+        } else {
+            return [];
+        }
+    }
+}

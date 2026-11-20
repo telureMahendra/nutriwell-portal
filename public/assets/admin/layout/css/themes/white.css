@@ -1,0 +1,412 @@
+.page-container-bg-solid .page-content {
+    background: #dddddd;
+}
+
+.page-sidebar .page-sidebar-menu .sub-menu li > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu .sub-menu li > a,.page-sidebar .page-sidebar-menu > li > a{
+  color: #000;
+}
+
+.sub-menu li a {
+    color: #000; /* default text */
+    background-color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sub-menu li a:hover {
+    color: #fff !important;
+    background-color: #f57f2799 !important;
+}
+
+
+.page-sidebar .page-sidebar-menu > li.active > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li.active > a,.page-sidebar .page-sidebar-menu > li:hover > a{
+  background-color: #F57F27;
+  color: #fff;
+}
+
+.dashboard-stat.green-haze {
+    background-color: #fff;
+    border: 1px solid #00AE9E;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+.dashboard-stat.green-haze .details .number {
+    color: #00AE9E;
+}
+.dashboard-stat .visual {
+    width: 80px;
+    height: 80px;
+    display: block;
+    float: left;
+    padding-top: 10px;
+    padding-left: 0px;
+    margin-bottom: 35px;
+    font-size: 35px;
+    line-height: 35px;
+}
+
+.dashboard-stat .details .number {
+    padding-top: 25px;
+    text-align: start;
+    font-size: 34px;
+    line-height: 36px;
+    letter-spacing: -1px;
+    margin-bottom: 0px;
+    font-weight: 600;
+}
+
+.dashboard-stat.green-haze .visual > i {
+    color: #00ae9e;
+    background-color: rgba(0, 174, 158, 0.1); 
+    font-size: 28px;
+    opacity: 1;
+    /* PERFECT CIRCLE SETTINGS */
+    width: 62px;
+    height: 62px;
+    line-height: 62px;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-block;
+
+    margin-left: 30px; /* your original */
+}
+
+
+
+.dashboard-stat.green-haze .more {
+    color: #00AE9E;
+    background-color: #fff;
+}
+.dashboard-stat.green-haze .details .desc {
+    color: #00AE9E;     
+}
+.dashboard-stat.purple-plum {
+    background-color: #fff;
+    border: 1px solid #AF8BCC;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.dashboard-stat.purple-plum .details .number {
+    color: #AF8BCC;
+}
+.dashboard-stat.purple-plum .more {
+    color: #AF8BCC;
+    background-color: #fff;
+    text-align: center;
+}
+
+.dashboard-stat.purple-plum .visual > i {
+    color: #AF8BCC;
+    background-color: rgba(175, 139, 204, 0.1); 
+    font-size: 28px;
+    width: 62px;
+    height: 62px;
+    line-height: 62px;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-block;
+    opacity: 1;
+    margin-left: 20px; /* your original */
+}
+.dashboard-stat.purple-plum .details .desc {
+    color: #AF8BCC;
+    opacity: 1;
+    
+}
+
+.dashboard-stat.blue-madison {
+    background-color: #fff;
+    border: 1px solid #EDA5A3;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+.dashboard-stat.blue-madison .details .number {
+    color: #EDA5A3;
+}
+.dashboard-stat.blue-madison .more {
+    color: #EDA5A3;
+    background-color: #fff;
+}
+.dashboard-stat.blue-madison .visual > i {
+    color: #EDA5A3;
+    background-color: rgba(237, 165, 163, 0.1); 
+    font-size: 28px;
+    width: 62px;
+    height: 62px;
+    line-height: 62px;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-block;
+    opacity: 1; 
+    margin-left: 30px; /* your original */
+}
+.dashboard-stat.blue-madison .details .desc {
+    color: #EDA5A3;   
+}
+.dashboard-stat.red-intense {
+    background-color: #fff;
+    border: 1px solid #6E7CB9;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+.dashboard-stat.red-intense .details .number {
+    color: #6E7CB9;
+}
+.dashboard-stat.red-intense .more {
+    color: #6E7CB9;
+    /*background-color: #fff;*/
+}
+.dashboard-stat.red-intense .visual > i {
+    color: #6E7CB9 !important;
+    background-color: rgba(92, 132, 180, 0.1) !important; 
+    font-size: 28px !important;
+    width: 62px !important;
+    height: 62px !important;
+    line-height: 62px !important;
+    text-align: center !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+    margin-left: 30px; /* your original */
+    opacity: 1;
+}
+.dashboard-stat.red-intense .details .desc {
+    color: #737ABA;       
+}
+ .dashboard-stat.red-intense .more {
+    color: #737ABA;
+    background-color: #ffff;
+}
+.dashboard-stat .more {
+    padding: 6px 10px 6px 10px;
+    position: relative;
+    text-transform: uppercase;
+    font-weight: 300;
+    font-size: 11px; 
+}
+.dashboard-stat .more:hover{
+  text-decoration: underline;
+}
+
+.portlet.box.red {
+    background-color: #FFFFFF !important;
+    border-radius: 8px !important;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+    border: none !important;
+    overflow: hidden;
+}
+
+/* -----------------------------------------------------
+   GLOBAL CARD STYLE
+----------------------------------------------------- */
+.portlet.box.red,
+.portlet.box.blue,
+.portlet.light.bordered {
+    background: #FFFFFF !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 4px rgba(0,0,0,0.25) !important;
+    border: none !important;
+    overflow: hidden !important; /* Ensures corners are rounded */
+    padding: 0px !important;
+}
+
+/* -----------------------------------------------------
+   HEADER / TITLE BAR
+----------------------------------------------------- */
+.portlet-title {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #E5E5E5 !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 12px 15px !important;
+}
+
+/* Title text */
+.portlet-title .caption {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000 !important;
+}
+
+/* Remove old theme top color from old template */
+.portlet.box.red > .portlet-title,
+.portlet.box.blue > .portlet-title {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #E5E5E5 !important;
+}
+
+/* -----------------------------------------------------
+   BODY WRAPPER
+----------------------------------------------------- */
+.portlet-body {
+    background: #FFFFFF !important;
+    padding: 15px !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+/* -----------------------------------------------------
+   TABLE DESIGN
+----------------------------------------------------- */
+.table-scrollable {
+    height: 300px;
+    overflow-y: auto !important;
+    background: #FFFFFF !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+/* Scrollbar */
+.table-scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+.table-scrollable::-webkit-scrollbar-thumb {
+    background: #CCC;
+    border-radius: 4px;
+}
+
+.table.table-bordered {
+    background: #FFFFFF;
+    border-radius: 8px !important;
+}
+
+.table.table-bordered th,
+.table.table-bordered td {
+    border-color: #EEE !important;
+}
+
+.table-modern {
+    width: 100%;
+    border-collapse: collapse !important;
+}
+
+.table-modern thead th {
+    padding: 14px 12px;
+    font-weight: 600;
+    border-bottom: 2px solid #e3e6e8;
+    background: #fff;
+    font-size: 15px;
+}
+
+.table-modern tbody td {
+    padding: 16px 12px;
+    font-size: 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Force last row border */
+.table-modern tbody tr:not(:last-child) td  {
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.btn-default {
+    color: #000 !important;
+    background-color: transparent; !important;
+    border-color: transparent !important;
+}
+
+/* -----------------------------------------------------
+   BAR CHART
+----------------------------------------------------- */
+#barChart {
+    background: #FFFFFF !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+/* -----------------------------------------------------
+   PIE CHART (DONUT)
+----------------------------------------------------- */
+#pieChart {
+    background: #FFFFFF !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+.green.btn {
+    color: #FFFFFF !important;
+    background-color: #F57F27 !important;
+}
+.green.btn:hover {
+  color: #FFFFFF !important;
+    background-color: #F57F27 !important;  
+}
+
+.red.btn {
+    color: #000;
+    background-color: transparent;
+}
+
+
+.table th {
+    color: #F57F27 !important;
+}
+
+.table>tbody>tr>td {
+   border: none !important;
+}
+
+.table-scrollable {
+    border: none !important;
+}
+
+
+
+.portlet.box.grey-cascade {
+    border: 1px solid #ffffff !important;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25) !important;
+    border-radius: 8px !important;
+    border-top: 0;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: transparent !important;
+}
+
+purple.btn:hover{
+    color: #FFFFFF;
+    background-color: #;
+}
+
+.btn-danger {
+    color: #aaa !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.purple.btn {
+    color: #aaa !important;
+    background-color: transparent; !important;
+}
+.red.btn {
+    color: #aaa !important;
+    background-color: transparent; !important;
+}
+.dark.btn {
+    color: #aaa !important;
+    background-color: transparent; !important;
+}
+
+.red.btn:active:hover, .red.btn.active:hover {
+    background-color: transparent; !important;
+}
+
+.dark.btn:active:hover, .dark.btn.active:hover {
+    background-color: none; !important;
+}
+
+.purple.btn:active:hover, .purple.btn.active:hover {
+    background-color: transparent; !important;
+}
+
+.purple.btn:hover, .purple.btn:focus, .purple.btn:active, .purple.btn.active {
+    color: #aaa !important;
+    background-color: #cccccc !important;
+}
+
+.red.btn:hover, .red.btn:focus, .red.btn:active, .red.btn.active {
+    color: #aaa;
+    background-color: #ccc;
+}
+
+@media (max-width: 767px) {
+    .page-content-wrapper .page-content {
+        padding: 20px 10px 10px 10px !important;
+        overflow: visible; !important;
+    }
+}

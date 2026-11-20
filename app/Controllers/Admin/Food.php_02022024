@@ -1,0 +1,355 @@
+<?php
+
+namespace App\Controllers\Admin;
+
+use Config\Services;
+use CodeIgniter\Controller;
+use CodeIgniter\Model;
+
+
+class Food extends Controller
+{
+    protected $session;
+    protected $validation;
+
+    public function __construct()
+    {
+        // Load the validation library
+
+        $this->validation = Services::validation();
+        $this->common_model = model('App\Models\Common_model', false);
+        $this->food_model = model('App\Models\Food_model', false);
+
+        $this->session = session();
+        if (!is_admin_logged_in()) {
+            redirect('');
+        }
+        $controller = class_basename(service('router')->controllerName());
+        $methodName  = class_basename(service('router')->methodName());
+        //hasAccess($controller, $methodName);
+    }
+
+    public function index()
+    {
+        if ($this->session->has('userid')) {
+            $data = [
+                'menutitle' => 'Food',
+                'pagetitle' => 'Food',
+                'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url() . '">Home</a><i class="fa fa-angle-right"> </i> </li> <li>Manage Food</li></ul>'
+            ];
+            $condition = ['status' => 'Active'];
+
+
+            $contest_images = $this->food_model->getFoodList("food", $condition);
+			$pager=service('pager');
+			$page=(int)(($this->request->getVar('page')!==null)?$this->request->getVar('page'):1)-1;
+			$perPage =  PAGELIMIT;
+			$total = count($contest_images);
+			$pager->makeLinks($page+1, $perPage, $total);
+			$offset = $page * $perPage;
+
+
+
+            $food_Array = $this->food_model->getFoodList('food', $condition,$perPage, $offset);
+            $data['food'] = $food_Array;
+            
+            //echo "<pre>";print_r($data);die();
+
+            echo view('admin/food/index', $data);
+        } else {
+            return view('admin/index');
+        }
+    }
+
+    public function add()
+    {
+        if ($this->session->has('userid')) {
+            $data = [
+                'menutitle' => 'Food',
+                'pagetitle' => 'Add Food',
+                'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url() . '">Home</a><i class="fa fa-angle-right"></i></li> <li><a href="' . base_url() . 'food">Manage Food</a><i class="fa fa-angle-right"></i></li><li>Add Food</li></ul>'
+            ];
+
+
+            if ($this->session->get('err_msg')) {
+                $data['err_msg'] = $this->session->get('err_msg');
+                $this->session->remove('err_msg');
+            }
+            if (trim($this->request->getPost('submit')) == '') {
+
+
+                $food_type_option = '';
+                $condition = ['status' => 'Active'];
+                $food_Array =  (array) $this->common_model->getAllData('food_type', $condition);
+                if ($food_Array) {
+                    foreach ($food_Array as $food) {
+                        $food_type_option .= '<option value="' . $food->food_type_id . '">' . $food->food_type_name . '</option>';
+                    }
+                }
+                $data['food_type_option'] = $food_type_option;
+
+
+                return view('admin/food/add_food', $data);
+            } elseif (trim($this->request->getPost('submit')) == 'Add Food') {
+
+                $validationRules = [
+                    'food_name' => ['label' => 'Food', 'rules' => 'required'],
+                    'calories' => ['label' => 'Calories', 'rules' => 'required']
+                ];
+                if (!$this->validate($validationRules)) {
+                    return view('admin/food/add_food', $data);
+                } else {
+                    $food_type_id = '';
+                    if ($this->request->getPost('food_type_id') != "") {
+                        $food_type_id = implode(',', $this->request->getPost('food_type_id'));
+                    }
+
+                    $insert_data = [
+                        'food_name' => trim($this->request->getPost('food_name')),
+                        'calories' => trim($this->request->getPost('calories')),
+                        'food_type_id' => $food_type_id,
+                        'status' => 'Active',
+                        'created_on' => date('Y-m-d'),
+                        'created_by' => session()->get('userid'),
+                        'updated_on' => date('Y-m-d'),
+                        'updated_by' => session()->get('userid')
+                    ];
+                    // echo "<pre>";print_r($insert_data);die();
+                    $id = $this->common_model->addData('food', $insert_data);
+                    if ($id > 0) {
+                        $arr_msg = array('suc_msg' => 'Food added successfully!!!', 'msg-type' => 'success');
+                    } else {
+                        $arr_msg = array('suc_msg' => 'Failed to add Food', 'msg-type' => 'danger');
+                    }
+                    $this->session->set($arr_msg);
+                    return redirect()->to('food');
+                }
+            }
+        } else {
+            return view('admin/index');
+        }
+    }
+
+
+    public function edit($food_id)
+    {
+        if ($food_id > 0) {
+            $data = [
+                'menutitle' => 'Food',
+                'pagetitle' => 'Edit Food',
+                'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url() . '">Home</a><i class="fa fa-angle-right"></i></li> <li><a href="' . base_url() . 'food">Manage Food</a><i class="fa fa-angle-right"></i></li> <li>Edit Food </li></ul>'
+            ];
+            $condition = ['food_id' => $food_id];
+            $foodTypeDetails = $this->common_model->getAllData('food', $condition);
+            $data['foodTypeDetails'] = $foodTypeDetails;
+            //echo "<pre>";print_r($data);die();
+
+
+
+            $food_type_array  = [];
+            if ($foodTypeDetails[0]->food_type_id != "") {
+                $food_type_array = explode(',', $foodTypeDetails[0]->food_type_id);
+            }
+
+
+            $food_type_option = '';
+            $condition = ['status' => 'Active'];
+            $food_Array =  (array) $this->common_model->getAllData('food_type', $condition);
+            if ($food_Array) {
+                foreach ($food_Array as $food) {
+                    $sel = '';
+                    if (in_array($food->food_type_id, $food_type_array)) {
+                        $sel = 'selected="selected"';
+                    }
+                    $food_type_option .= '<option value="' . $food->food_type_id . '" ' . $sel . '>' . $food->food_type_name . '</option>';
+                }
+            }
+            $data['food_type_option'] = $food_type_option;
+
+
+            if (trim($this->request->getPost('submit')) == '') {
+                return view('admin/food/edit_food', $data);
+            } elseif (trim($this->request->getPost('submit')) == 'Edit Food') {
+
+                $validationRules = [
+                    'food_name' => ['label' => 'Food', 'rules' => 'required'],
+                    'calories' => ['label' => 'Calories', 'rules' => 'required']
+                ];
+
+                if (!$this->validate($validationRules)) {
+                    return view('admin/food/edit_food', $data);
+                } else {
+                    $food_type_id = '';
+                    if (count($this->request->getPost('food_type_id')) > 0) {
+                        $food_type_id = implode(',', $this->request->getPost('food_type_id'));
+                    }
+
+                    $update_data = [
+                        'food_name' => trim($this->request->getPost('food_name')),
+                        'calories' => trim($this->request->getPost('calories')),
+                        'food_type_id' => $food_type_id,
+                        'updated_on' => date('Y-m-d'),
+                        'updated_by' => session()->get('userid')
+                    ];
+                    $condition = ['food_id' => $food_id];
+
+                    $id = $this->common_model->updateData('food', $update_data, $condition);
+                    if ($id > 0) {
+                        $arr_msg = array('suc_msg' => 'Food update successfully!!!', 'msg-type' => 'success');
+                    } else {
+                        $arr_msg = array('suc_msg' => 'Failed to update Food', 'msg-type' => 'danger');
+                    }
+                    $this->session->set($arr_msg);
+                    return redirect()->to('food');
+                }
+            }
+        } else {
+            return view('admin/index');
+        }
+    }
+
+
+
+    public function close()
+    {
+        $food_id = $this->request->getPost('food_id');
+        if ($food_id > 0) {
+            $update_data = [
+                'status' => 'Inactive',
+                'updated_on' => date('Y-m-d'),
+                'updated_by' => session()->get('userid')
+            ];
+            $condition = ['food_id' => $food_id];
+            $id = $this->common_model->updateData('food', $update_data, $condition);
+            echo $id;
+        } else {
+            echo 0;
+        }
+    }
+
+    public function list_type()
+    {
+        if ($this->session->has('userid')) {
+            $data = [
+                'menutitle' => 'Food Type',
+                'pagetitle' => 'Food Type',
+                'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url() . '">Home</a><i class="fa fa-angle-right"> </i> </li> <li>Manage Food Type</li></ul>'
+            ];
+            $condition = ['status' => 'Active'];
+            $food_type_Array = $this->common_model->getAllData('food_type', $condition);
+            $data['food_type'] = $food_type_Array;
+            // echo "<pre>";print_r($data);die();
+
+            echo view('admin/food/list_type', $data);
+        } else {
+            return view('admin/index');
+        }
+    }
+    public function add_type()
+    {
+        if ($this->session->has('userid')) {
+            $data = [
+                'menutitle' => 'Food Type',
+                'pagetitle' => 'Add Food Type',
+                'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url() . '">Home</a><i class="fa fa-angle-right"></i></li> <li><a href="' . base_url() . 'food/list_type">Manage Food Type</a><i class="fa fa-angle-right"></i></li><li>Add Food Type</li></ul>'
+            ];
+            if ($this->session->get('err_msg')) {
+                $data['err_msg'] = $this->session->get('err_msg');
+                $this->session->remove('err_msg');
+            }
+            if (trim($this->request->getPost('submit')) == '') {
+                return view('admin/food/add_type', $data);
+            } elseif (trim($this->request->getPost('submit')) == 'Add Food Type') {
+
+                $validationRules = [
+                    'food_type_name' => ['label' => 'Food Type', 'rules' => 'required|is_unique[food_type.food_type_name]'],
+                ];
+                if (!$this->validate($validationRules)) {
+                    return view('admin/food/add_type', $data);
+                } else {
+                    $insert_data = [
+                        'food_type_name' => trim($this->request->getPost('food_type_name')),
+                        'status' => 'Active',
+                        'created_on' => date('Y-m-d'),
+                        'created_by' => session()->get('userid'),
+                        'updated_on' => date('Y-m-d'),
+                        'updated_by' => session()->get('userid')
+                    ];
+                    // echo "<pre>";print_r($insert_data);die();
+                    $id = $this->common_model->addData('food_type', $insert_data);
+                    if ($id > 0) {
+                        $arr_msg = array('suc_msg' => 'Food Type added successfully!!!', 'msg-type' => 'success');
+                    } else {
+                        $arr_msg = array('suc_msg' => 'Failed to add Food Type', 'msg-type' => 'danger');
+                    }
+                    $this->session->set($arr_msg);
+                    return redirect()->to('food/list_type');
+                }
+            }
+        } else {
+            return view('admin/index');
+        }
+    }
+    public function edit_type($food_type_id)
+    {
+        if ($food_type_id > 0) {
+            $data = [
+                'menutitle' => 'Food Type',
+                'pagetitle' => 'Edit Food Type',
+                'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url() . '">Home</a><i class="fa fa-angle-right"></i></li> <li><a href="' . base_url() . 'food/list_type">Manage Food Type</a><i class="fa fa-angle-right"></i></li> <li>Edit Food Type </li></ul>'
+            ];
+            $condition = ['food_type_id' => $food_type_id];
+            $foodTypeDetails = $this->common_model->getAllData('food_type', $condition);
+            $data['foodTypeDetails'] = $foodTypeDetails;
+            //echo "<pre>";print_r($data);die();
+
+            if (trim($this->request->getPost('submit')) == '') {
+                return view('admin/food/edit_type', $data);
+            } elseif (trim($this->request->getPost('submit')) == 'Edit Food Type') {
+
+                $validationRules = [
+
+                    'food_type_name' => ['label' => 'Food Type', 'rules' => 'required|is_unique[food_type.food_type_name]'],
+                ];
+
+                if (!$this->validate($validationRules)) {
+                    return view('admin/food/edit_type', $data);
+                } else {
+                    $update_data = [
+                        'food_type_name' => trim($this->request->getPost('food_type_name')),
+                        'updated_on' => date('Y-m-d'),
+                        'updated_by' => session()->get('userid')
+                    ];
+                    $condition = ['food_type_id' => $food_type_id];
+
+                    $id = $this->common_model->updateData('food_type', $update_data, $condition);
+                    if ($id > 0) {
+                        $arr_msg = array('suc_msg' => 'Food Type update successfully!!!', 'msg-type' => 'success');
+                    } else {
+                        $arr_msg = array('suc_msg' => 'Failed to update Food Type', 'msg-type' => 'danger');
+                    }
+                    $this->session->set($arr_msg);
+                    return redirect()->to('food/list_type');
+                }
+            }
+        } else {
+            return view('admin/index');
+        }
+    }
+    public function close_type()
+    {
+        $food_type_id = $this->request->getPost('food_type_id');
+        if ($food_type_id > 0) {
+            $update_data = [
+                'status' => 'Inactive',
+                'updated_on' => date('Y-m-d'),
+                'updated_by' => session()->get('userid')
+            ];
+            $condition = ['food_type_id' => $food_type_id];
+            $id = $this->common_model->updateData('food_type', $update_data, $condition);
+            echo $id;
+        } else {
+            echo 0;
+        }
+    }
+}

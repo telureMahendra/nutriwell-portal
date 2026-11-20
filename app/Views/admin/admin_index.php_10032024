@@ -1,0 +1,487 @@
+<?php 
+$db = db_connect();
+
+
+$salesAgent =0;
+$sqlA= "SELECT count(*) as totalSalesAgent from users WHERE user_role='SalesAgent'";
+$queryA = $db->query($sqlA);
+$resultA = $queryA->getRowArray();
+if ($resultA) {
+	$salesAgent =$resultA["totalSalesAgent"];
+}
+
+$salesAmount=0;
+$sqlB= "SELECT sum(total_amount) as salesAmount from booking WHERE status='Active'";
+$queryB = $db->query($sqlB);
+$resultB = $queryB->getRowArray();
+if ($resultB) {
+	$salesAmount =$resultB["salesAmount"];
+}
+
+$totalClients=0;
+$sqlC= "SELECT count(*) as totalClients from client_profile WHERE status='Active'";
+$queryC = $db->query($sqlC);
+$resultC = $queryC->getRowArray();
+if ($resultC) {
+	$totalClients =$resultC["totalClients"];
+}
+
+
+$totalMentors=0;
+$sqlD= "SELECT count(*) as totalMentors from doctor WHERE status='Active'";
+$queryD = $db->query($sqlD);
+$resultD = $queryD->getRowArray();
+if ($resultD) {
+	$totalMentors =$resultD["totalMentors"];
+}
+
+
+
+$sqlE= "
+SELECT 
+	appointment.appointment_id,appointment.date,appointment.slot,
+	client_profile.client_name,
+	plan.name as planName,
+	doctor.doctor_name
+FROM 
+	appointment 
+INNER JOIN
+	client_profile ON appointment.client_id=client_profile.client_id
+INNER JOIN
+	booking ON appointment.booking_id=booking.booking_id
+INNER JOIN
+	plan ON booking.plan_id=plan.plan_id
+INNER JOIN
+	doctor ON appointment.doctor_id=doctor.doctor_id
+
+WHERE 
+	appointment.date='".date('Y-m-d')."'
+";
+$queryE = $db->query($sqlE);
+$resultE = $queryE->getResultArray();
+
+
+
+
+$sqlF= "
+SELECT 
+	booking.booking_id,booking.date,booking.total_amount,
+	client_profile.client_name,
+	plan.name as planName
+FROM 
+	booking 
+INNER JOIN
+	client_profile ON booking.client_id=client_profile.client_id
+INNER JOIN
+	plan ON booking.plan_id=plan.plan_id
+WHERE 
+	booking.status='Active' AND 
+	booking.date='".date('Y-m-d')."'
+";
+$queryF = $db->query($sqlF);
+$resultF = $queryF->getResultArray();
+
+
+
+$sqlG= "
+SELECT 
+	booking.plan_id,sum(booking.total_amount) as totalAmount,
+	plan.name as planName
+FROM 
+	booking 
+INNER JOIN
+	client_profile ON booking.client_id=client_profile.client_id
+INNER JOIN
+	plan ON booking.plan_id=plan.plan_id
+WHERE 
+	booking.status='Active' 
+
+GROUP BY
+	booking.plan_id
+";
+$pieArray = [];
+$queryG = $db->query($sqlG);
+$resultG = $queryG->getResultArray();
+foreach($resultG as $row){
+	$pieArray[] =  array("country"=>$row["planName"],"value"=>$row["totalAmount"]);
+}
+
+
+$sqlH= "SELECT 
+	YEAR(date) AS appointment_year, 
+    MONTH(date) AS appointment_month, 
+        MONTHNAME(date) AS month_name,
+    COUNT(*) AS appointment_count 
+FROM 
+	appointment GROUP BY YEAR(date), 
+    MONTH(date) 
+ORDER BY 
+	appointment_year DESC 
+Limit 6";
+$barArray = [];
+$queryH = $db->query($sqlH);
+$resultH = $queryH->getResultArray();
+foreach($resultH as $row){
+	$barArray[] =  array("country"=>$row["month_name"],"visits"=>$row["appointment_count"],"color"=>"#".substr(md5(rand()), 0, 6));
+}
+
+
+?>
+<!-- BEGIN DASHBOARD STATS -->
+<?= $this->extend("layouts/admin_default"); ?>
+<?= $this->section("content");?>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-home"></i>
+            <a href="<?= base_url(); ?>">Home</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <a href="<?= base_url(); ?>">Dashboard</a>
+        </li>
+    </ul>
+    <div class="page-toolbar">
+        <!--<div id="dashboard-report-range" class="pull-right tooltips btn btn-sm btn-default" data-container="body" data-placement="bottom" data-original-title="Change dashboard date range">
+            <i class="icon-calendar"></i>&nbsp; <span class="thin uppercase visible-lg-inline-block"></span>&nbsp; <i class="fa fa-angle-down"></i>
+        </div>-->
+    </div>
+</div>
+<h3 class="page-title"> Dashboard</h3>
+<div class="row">
+<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat green-haze">
+            <div class="visual">
+            <i class="fa fa-clock-o"></i>
+                
+            </div>
+            <div class="details">
+                <div class="number">
+                     <?php echo $salesAgent; ?>
+                </div>
+                <div class="desc">
+                     Sales Agent
+                </div>
+            </div>
+            <a class="more" href="<?php echo base_url();?>users">
+            View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat purple-plum">
+            <div class="visual">
+            <i class="fa fa-calendar"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                <i class="fa fa-inr"></i><?php echo $salesAmount; ?>
+                </div>
+                <div class="desc">
+                     Sales Amount
+                </div>
+            </div>
+            <a class="more" href="<?php echo base_url();?>booking">
+            View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>    
+<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat blue-madison">
+            <div class="visual">
+                <i class="fa fa-users"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                <?php echo $totalClients; ?>
+                </div>
+                <div class="desc">
+					Total Clients
+                </div>
+            </div>
+            <a class="more" href="<?php echo base_url();?>clients">
+            View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat red-intense">
+            <div class="visual">
+                <i class="fa fa-user-md"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                <?php echo $totalMentors; ?>
+                </div>
+                <div class="desc">
+                Total Mentors
+                </div>
+            </div>
+            <a class="more" href="<?php echo base_url();?>doctor">
+            View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+
+
+</div>
+
+<div class="row">
+<div class="col-md-6">
+					<div class="portlet box red">
+						<div class="portlet-title">
+							<div class="caption">
+                            <i class="fa fa-clock-o"></i>Today’s Appointment
+							</div>
+							
+						</div>
+						<div class="portlet-body">
+							<div class="table-scrollable" style="height: 220px;overflow-y: scroll;">
+								<table class="table table-bordered table-hover">
+								<thead>
+								<tr>
+									<th>#</th>
+                                    <th>Date</th>
+                                    <th>Client</th>
+									<th>Mentor</th>
+									<th>Plan</th>
+								</tr>
+								</thead>
+								
+								<?php if($resultE){$srNo=0;foreach($resultE as $row){$srNo++;?>
+								<tr>
+									<td><?php echo $srNo;?></td>
+									<td><?php echo $row["date"];?></td>
+									<td><?php echo $row["client_name"];?></td>
+                                    <td><?php echo $row["planName"];?></td>
+									<td><?php echo $row["doctor_name"];?></td>
+								</tr>											
+								<?php }}?>	
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="col-md-6">
+					<div class="portlet box blue">
+						<div class="portlet-title">
+							<div class="caption">
+                            <i class="fa fa-calendar"></i>Today’s bookings
+							</div>
+							
+						</div>
+						<div class="portlet-body">
+							<div class="table-scrollable" style="height: 220px;overflow-y: scroll;">
+								<table class="table table-bordered table-hover">
+								<thead>
+								<tr>
+									<th>#</th>
+                                    <th>Date</th>
+									<th>Name</th>
+									<th>Plan</th>
+									<th>Amount</th>
+								</tr>
+								</thead>
+								<?php if($resultF){$srNo=0;foreach($resultF as $row){$srNo++;?>
+								<tr>
+									<td><?php echo $srNo;?></td>
+									<td><?php echo $row["date"];?></td>
+									<td><?php echo $row["client_name"];?></td>
+                                    <td><?php echo $row["planName"];?></td>
+									<td><?php echo number_format($row["total_amount"],2);?></td>
+								</tr>
+								<?php }}?>			               
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>                
+			</div>
+
+            <div class="row">
+            <div class="col-md-6">
+							<!-- BEGIN CHART PORTLET-->
+							<div class="portlet light bordered">
+								<div class="portlet-title">
+									<div class="caption">
+										<i class="icon-pie-chart font-green-haze"></i>
+										<span class="caption-subject bold font-green-haze"> Plan Wise Booking</span>
+									</div>
+									
+								</div>
+								<div class="portlet-body">
+									<div id="pieChart" class="chart" style="height: 400px;">
+									</div>
+									
+								</div>
+							</div>
+							<!-- END CHART PORTLET-->
+						</div>
+                        <div class="col-md-6">
+							<!-- BEGIN CHART PORTLET-->
+							<div class="portlet light bordered">
+								<div class="portlet-title">
+									<div class="caption">
+										<i class="icon-bar-chart font-green-haze"></i>
+										<span class="caption-subject bold font-green-haze"> Month Wise Appointments</span>
+										
+									</div>
+									
+								</div>
+								<div class="portlet-body">
+									<div id="barChart" class="chart" style="height: 400px;">
+									</div>
+									
+								</div>
+							</div>
+						</div>                        
+            
+</div>
+
+
+            
+</div>
+
+
+<?= $this->endSection()?>
+
+
+
+
+<?= $this->section("js");?>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/amcharts.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/serial.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/pie.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/radar.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/themes/light.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/themes/patterns.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amcharts/themes/chalk.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/ammap/ammap.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/ammap/maps/js/worldLow.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/global/plugins/amcharts/amstockcharts/amstock.js" type="text/javascript"></script>
+<!-- END PAGE LEVEL PLUGINS -->
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="<?php echo base_url();?>public/assets/global/scripts/metronic.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/admin/layout/scripts/layout.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
+<script src="<?php echo base_url();?>public/assets/admin/layout/scripts/demo.js" type="text/javascript"></script>
+<script>
+	jQuery(document).ready(function() {       
+
+
+
+		<?php if($resultG){?>
+
+        var chart = AmCharts.makeChart("pieChart", {
+			"hideCredits":true,
+            "type": "pie",
+            "theme": "light",
+            "fontFamily": 'Open Sans',            
+            "color":    '#888',
+             "dataProvider":<?php echo json_encode($pieArray);?>,
+			 //[
+			// 	{
+            //     "country": "12 Months plan",
+            //     "value": Math.floor(Math.random() * 90) + 10
+            // }, {
+            //     "country": "6 Months plan",
+            //     "value": Math.floor(Math.random() * 90) + 10
+            // }, {
+            //     "country": "3 Months plan",
+            //     "value": Math.floor(Math.random() * 90) + 10
+            // },],
+            "valueField": "value",
+            "titleField": "country",
+            "outlineAlpha": 0.4,
+            "depth3D": 15,
+            "balloonText": "[[title]]<br><span style='font-size:14px'><b>[[value]]</b> ([[percents]]%)</span>",
+            "angle": 30,
+            "exportConfig": {
+                menuItems: [{
+                    icon: '/lib/3/images/export.png',
+                    format: 'png'
+                }]
+            }
+        });
+		//chart.logo.disabled = true;
+
+		<?php }?>
+	
+
+	var chart = AmCharts.makeChart("barChart", {
+            "theme": "light",
+            "type": "serial",
+            "startDuration": 2,
+            "fontFamily": 'Open Sans',            
+            "color":    '#888',
+             "dataProvider":<?php echo json_encode($barArray);?>, 
+			 //[{
+            //     "country": "Jan",
+            //     "visits": Math.floor(Math.random() * 90) + 10,
+            //     //"color": "#FF0F00"
+            // }, {
+            //     "country": "Feb",
+            //     "visits": Math.floor(Math.random() * 90) + 10,
+            //     //"color": "#FF6600"
+            // }, {
+            //     "country": "March",
+            //     "visits": Math.floor(Math.random() * 90) + 10,
+            //     //"color": "#FF9E01"
+            // }, {
+            //     "country": "April",
+            //     "visits": Math.floor(Math.random() * 90) + 10,
+            //     //"color": "#FCD202"
+            // }, {
+            //     "country": "May",
+            //     "visits": Math.floor(Math.random() * 90) + 10,
+            //     //"color": "#F8FF01"
+            // }, {
+            //     "country": "June",
+            //     "visits": Math.floor(Math.random() * 90) + 10,
+            //     //"color": "#B0DE09"
+            // }],
+            "valueAxes": [{
+                "position": "left",
+                "axisAlpha": 0,
+                "gridAlpha": 0
+            }],
+            "graphs": [{
+                "balloonText": "[[category]]: <b>[[value]]</b>",
+                "colorField": "color",
+                "fillAlphas": 0.85,
+                "lineAlpha": 0.1,
+                "type": "column",
+                "topRadius": 1,
+                "valueField": "visits"
+            }],
+            "depth3D": 40,
+            "angle": 30,
+            "chartCursor": {
+                "categoryBalloonEnabled": false,
+                "cursorAlpha": 0,
+                "zoomable": false
+            },
+            "categoryField": "country",
+            "categoryAxis": {
+                "gridPosition": "start",
+                "axisAlpha": 0,
+                "gridAlpha": 0
+
+            },
+            "exportConfig": {
+                "menuTop": "20px",
+                "menuRight": "20px",
+                "menuItems": [{
+                    "icon": '/lib/3/images/export.png',
+                    "format": 'png'
+                }]
+            }
+        }, 0);
+
+});
+	
+
+
+</script>
+
+<?= $this->endSection()?>

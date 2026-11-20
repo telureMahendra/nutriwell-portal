@@ -1,0 +1,214 @@
+<link href="<?= base_url();?>public/assets/admin/pages/css/tasks.css" rel="stylesheet" type="text/css"/>
+<?= $this->extend("layouts/admin_default"); ?>
+<?= $this->section("content"); ?>
+<?php $validation =  \Config\Services::validation(); ?>
+
+<style>
+    .pagination{
+        margin: 20px 0;
+        float: left;
+    }
+    .pager{
+        float: right;
+    }
+
+</style>
+
+<div class="content">
+    <div class="page-bar">
+        <?= $breadcrumb; ?>
+    </div>
+    <div class="page-container">
+        <div class="tab-pane" id="tab_1">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet box grey-cascade">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <?= $pagetitle?>
+                            </div>
+
+                        </div>
+                        <div class="portlet-body">
+                            <div class="table-toolbar">
+                                <?php 
+                                    $attributes = array('method'=>'get','class' => 'login-form', 'id' => 'loginform');
+                                    echo form_open('clients', $attributes);
+                                ?>
+                                <div class="row">
+                                <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label">From</label>
+                                            <input type="date" class="form-control" name="fromdate" id="fromdate"  value="<?php echo ($fromdate!="" ? $fromdate :''); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label">To</label>
+                                            <input type="date" class="form-control" name="todate" value="<?php echo ($todate!="" ? $todate :''); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3" align="right">
+                                        <label class="control-label">&nbsp;&nbsp;</label>
+                                        <input type="text" class="form-control" name="search" placeholder="Search" value="<?php echo $search; ?>" >
+                                    </div>
+                                    <div class="col-md-3" align="right">
+                                        <div class="form-group">
+                                        <label class="control-label">&nbsp;&nbsp;</label>
+
+                                            <div>
+                                                <input  type="submit" name="submit" value="Filter"   class="btn green"/>
+                                                <a href="<?= base_url();?>clients/?download=true&<?php echo $_SERVER["QUERY_STRING"];?>"><span id="sample_editable_1_new" class="btn green"> &nbsp;&nbsp; <i class="fa fa-download"></i> Download  &nbsp;&nbsp;</span></a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?= form_close(); ?>
+                                    
+                                </div>
+                            </div>
+                            <table class="table table-striped table-bordered table-hover" id="sample_1">
+                                <thead>
+                                    <tr>
+                                        <th width="5%">
+                                         Sr. No. 
+                                     </th>
+                                     <th width="10%">
+                                          Client Number
+                                     </th>
+                                     <th width="15%">
+                                        Client Name
+                                    </th>
+                                    <th width="15%">
+                                        Email
+                                    </th>
+                                    <th width="10%">
+                                        Age
+                                    </th>
+                                    
+                                    <th width="15%">
+                                        Phone.No
+                                    </th>
+                                    <th width="10%">
+                                        Gender
+                                    </th>
+                                    <th width="8%">
+                                        Is Free
+                                    </th>      
+                                    
+                                    <th width="8%">
+                                    Sales Agent
+                                    </th>     
+                                    
+                                    <th width="8%">
+                                    Created On
+                                    </th>     
+                                    
+                                    
+                                    
+                                    <th width="20%">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (count($clientsList) > 0) { 
+                                    $k = 1;
+                                    foreach ($clientsList as $row) {
+                                        ?>
+                                        <tr class="odd gradeX">
+                                            <td><?= $k; ?></td>
+                                            <td><?= $row->client_number; ?></td>
+                                            <td><?= $row->client_name; ?></td>
+                                            <td><?= $row->client_email; ?></td>
+                                            <td><?= $row->age; ?></td>
+                                            <td><?= $row->client_mobile_number; ?></td>
+                                            <td><?= $row->client_gender;?></td>
+                                            <td><?= ($row->bookStatus =='Active') ? 'No':'Yes';?></td>
+                                            <td><?= $row->sales_agent;?></td>
+                                            <td><?php echo date('d/m/Y',strtotime($row->created_on));?></td>
+                                            <td width="15%">
+                                                <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'view')) { ?>
+                                                <a href="<?= base_url(); ?>clients/view/<?= $row->client_id; ?>" class="btn default btn-xs green" title="View Client" alt="View Client"><i class="fa fa-eye"></i></a>
+                                                <?php }?>
+
+                                                <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'edit')) { ?>
+                                                <a href="<?= base_url(); ?>clients/edit/<?= $row->client_id; ?>" class="btn default btn-xs purple" title="Edit Client" alt="Edit Client"><i class="fa fa-edit"></i></a>
+                                                <?php }?>
+
+                                                <?php if (CheckAccess(class_basename(service('router')->controllerName()), 'close')) { ?>
+                                                <a href="javascript:void(0)" onclick="close_client(<?= $row->client_id; ?>)" class="btn default btn-xs red" title="Delete Client" alt="Delete Client"><i class="fa fa-trash"></i></a>
+                                                <?php }?>
+                                            </td>
+                                        </tr>
+                                        <?php
+                                        $k++;
+                                    }
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+
+                        <?php 
+                            $pager = \Config\Services::pager();
+                            if ($pager):
+                                $pagi_path = 'clients';
+                                $pager->setPath($pagi_path);
+                            ?>
+                            <div class="row">
+                            <div class="col-md-6" style="text-align:center;">
+                                    <?php echo $pager->links();?>
+                                </div>
+
+                            <div class="col-md-6">
+                                    <?php echo $pager->simpleLinks();?>
+                                </div>
+                            </div>
+                            <?php endif; ?>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div> 
+<div class="modal fade" id="close_client" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Close Client</h4>
+            </div>
+            <div class="modal-body">
+                Are you sure to close this Client?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" id="yes">Yes</button>
+                <button type="button" class="btn default" id="no" data-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function close_client(client_id) {
+     $('#close_client').modal();
+         $('#close_client #yes').click(function () {
+
+             var url ='<?= base_url('clients/close') ?>';
+             // alert(client_id);
+            $.post(url, {
+                 client_id: client_id,
+             }, function (responseText) {
+               // alert(responseText);
+                 if (responseText == 1) {
+                   // alert(responseText);
+                     location.href = '<?= base_url('clients/') ?>';
+                 } else {
+                     alert('Something went wrong with your request');
+                 }
+             });
+         });
+    }
+</script>
+
+<?= $this->endSection();?>

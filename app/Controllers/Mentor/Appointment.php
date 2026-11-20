@@ -1,0 +1,407 @@
+<?php
+
+namespace App\Controllers\Mentor;
+
+use Config\Services;
+use CodeIgniter\Controller;
+
+class Appointment extends Controller
+{
+	protected $session;
+	protected $validation;
+
+	public function __construct()
+	{
+		$this->validation = Services::validation();
+		$this->common_model = model('App\Models\Common_model', false);
+		$this->appointment_model = model('App\Models\Appointment_model', false);
+		$this->session = session();
+
+		if (!is_doctor_logged_in()) {
+			redirect('');
+		}
+	}
+
+	public function index()
+	{
+		if ($this->session->has('doctor_id')) {
+
+			// $startDate = date("Y-m-01");
+			// $endDate = date("Y-m-d");
+
+			// if (trim($this->request->getPost('submit')) == 'Filter') {
+
+			// 	echo "<pre>";print_r($this->request->getPost());die();
+			// 	$startDate = trim($this->request->getPost('fromdate'));
+			// 	$endDate = trim($this->request->getPost('todate'));
+			// }
+			if ($this->request->getGet('submit') == 'Filter') {
+				// echo "<pre>";print_r($this->request->getGet());die();
+				$fromdate = $this->request->getGet('fromdate');
+				$endDate = $this->request->getGet('todate');
+				$search = $this->request->getGet('search');
+			} else {
+				//die();
+
+				//$startDate = date("Y-m-d", strtotime($startDate . " -30 days"));;
+				$fromdate = date("Y-m-d");
+				$endDate = date("Y-m-d");
+				$search = '';
+			}
+
+			$data = [
+				'fromdate' => $fromdate,
+				'todate' => $endDate,
+				'search' => $search,
+				'menutitle' => 'Appointment',
+				'pagetitle' => 'Appointment',
+				'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url('mentor') . '">Home</a><i class="fa fa-angle-right"></i></li> <li>Manage Appointment</li></ul>'
+			];
+			$condition = [
+				'A.doctor_id' => session()->get('doctor_id'),
+				'A.date >=' => $fromdate,
+				'A.date <=' => $endDate
+			];
+
+
+			$like = [
+				'CP.client_name' => $search,
+				'CP.client_mobile_number' => $search,
+				'D.doctor_name' => $search,
+				'P.name' => $search,
+				'A.slot' => $search,
+			];
+
+			$contest_images = $this->appointment_model->getDoctorAppointment("appointment", $condition, $like);
+
+			$pager = service('pager');
+			$page = (int)(($this->request->getVar('page') !== null) ? $this->request->getVar('page') : 1) - 1;
+			$perPage =  PAGELIMIT;
+			$total = count($contest_images);
+			$pager->makeLinks($page + 1, $perPage, $total);
+			$offset = $page * $perPage;
+
+			$appointmentArray = $this->appointment_model->getDoctorAppointment('appointment', $condition, $like, $perPage, $offset);
+			$data['appointmentList'] = $appointmentArray;
+
+
+			echo view('mentor/appointment/appointment_list', $data);
+		} else {
+			return view('mentor/index');
+		}
+	}
+
+	public function view($appointment_id)
+	{
+		if ($this->session->has('doctor_id')) {
+			$data = [
+				'menutitle' => 'Appointment',
+				'pagetitle' => 'view Appointment',
+				'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url('mentor') . '">Home</a><i class="fa fa-angle-right"></i></li> <li><a href="' . base_url('mentor/appointment') . '">Manage Appointment</a><i class="fa fa-angle-right"></i></li><li> View Appointment </li></ul>'
+			];
+
+			$appointmentDetails = $this->appointment_model->getAppointmentDetails($appointment_id);
+			$data['appointmentDetails'] = $appointmentDetails;
+
+			echo view('mentor/appointment/view_appointment', $data);
+		} else {
+			return view('index');
+		}
+	}
+	public function complete()
+	{
+		$appointment_id  = $this->request->getPost('appointment_id');
+
+		if ($appointment_id > 0) {
+			$condition = ['appointment_id' => $appointment_id];
+
+			$update_data = [
+				'status' => 'Completed',
+				'updated_on' => date('Y-m-d'),
+				'updated_by' => session()->get('userid')
+			];
+
+			$id = $this->common_model->updateData('appointment', $update_data, $condition);
+			echo $id;
+		} else {
+			echo 0;
+		}
+	}
+
+
+
+	public function addplan($appointment_id)
+	{
+		if ($this->session->has('doctor_id')) {
+			$data = [
+				'menutitle' => 'Appointment',
+				'pagetitle' => 'Add Plan',
+				'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url('mentor') . '">Home</a><i class="fa fa-angle-right"></i></li> <li><a href="' . base_url() . 'mentor/appointment">Manage Appointment</a><i class="fa fa-angle-right"></i></li><li>Add Plan</li></ul>'
+			];
+			$condition = [
+				'A.appointment_id' => $appointment_id,
+			
+			];
+
+
+			$like = [
+				'CP.client_name' => '',
+				'CP.client_mobile_number' => '',
+				'D.doctor_name' => '',
+				'P.name' => '',
+				'A.slot' => '',				
+			];
+
+			$appointmentArray = $this->appointment_model->getDoctorAppointment('appointment', $condition, $like);
+			$data['appointmentList'] = $appointmentArray;
+
+
+			$data['appointment_id'] = $appointment_id;
+
+			if ($this->session->get('err_msg')) {
+				$data['err_msg'] = $this->session->get('err_msg');
+				$this->session->remove('err_msg');
+			}
+
+			if (trim($this->request->getPost('submit')) == '') {
+				return view('mentor/appointment/add_plan', $data);
+			} elseif (trim($this->request->getPost('submit')) == 'Add Plan') {
+				$workoutplan = $this->request->getFile('workoutplan');
+				$dietplan = $this->request->getFile('dietplan');
+				$prescription = $this->request->getFile('prescription');
+
+
+				$workoutplan_name = '';
+				if ($workoutplan->isValid()) {
+					if ($workoutplan->getName('workoutplan') != "") {
+						$workoutplan_srt = explode('.', $workoutplan->getName('workoutplan'));
+						$workoutplan_name = uniqid() . "." . $workoutplan_srt[1];
+						$filetype1 = "pdf";
+						$workoutplan_targetpath = "./public/uploads/appointment/plan/workoutplan";
+						$workoutplan->move($workoutplan_targetpath, $workoutplan_name);
+					}
+				}
+
+				$dietplan_name = '';
+				if ($dietplan->isValid()) {
+					if ($dietplan->getName('workoutplan') != "") {
+						$dietplan_srt = explode('.', $dietplan->getName('dietplan'));
+						$dietplan_name = uniqid() . "." . $dietplan_srt[1];
+						$filetype2 = "pdf";
+						$header_targetpath = "./public/uploads/appointment/plan/dietplan";
+						$dietplan->move($header_targetpath, $dietplan_name);
+					}
+				}
+
+				$prescription_name = '';
+				if ($prescription->isValid()) {
+					if ($prescription->getName('prescription') != "") {
+						$prescription_srt = explode('.', $prescription->getName('prescription'));
+						$prescription_name = uniqid() . "." . $prescription_srt[1];
+						$filetype2 = "pdf";
+						$header_targetpath = "./public/uploads/appointment/plan/prescription";
+						$prescription->move($header_targetpath, $prescription_name);
+					}
+				}
+
+				$update_data = [
+					'workoutplan' => $workoutplan_name,
+					'dietplan' => $dietplan_name,
+					'prescription' => $prescription_name,
+					'updated_on' => date('Y-m-d'),
+					'updated_by' => session()->get('userid')
+				];
+				$condition = ['appointment_id' => $appointment_id];
+
+				$id = $this->common_model->updateData('appointment', $update_data, $condition);
+				if ($id > 0) {
+					$arr_msg = array('suc_msg' => 'Plans added successfully!!!', 'msg-type' => 'success');
+				} else {
+					$arr_msg = array('suc_msg' => 'Failed to add Plans', 'msg-type' => 'danger');
+				}
+				$this->session->set($arr_msg);
+				return redirect()->to('mentor/appointment');
+				// } else {
+				// 	return view('mentor/appointment/add_plan', $data);
+				// }
+			}
+		} else {
+			return view('index');
+		}
+	}
+
+	public function download_diet($dietplan)
+	{
+		if ($dietplan != '') {
+			//$file = $_SERVER['CONTEXT_DOCUMENT_ROOT'] . '/healthie4u/public/uploads/appointment/plan/dietplan/' . $dietplan;
+			$file = str_replace('\\', '/', FCPATH  . 'public/uploads/appointment/plan/dietplan/' . $dietplan);
+			return $this->response->download($file, null);
+		}
+	}
+
+
+	public function download_workout($workoutplan)
+	{
+		if ($workoutplan != '') {
+			//$file = $_SERVER['CONTEXT_DOCUMENT_ROOT'] . '/healthie4u/public/uploads/appointment/plan/workoutplan/' . $workoutplan;
+			$file = str_replace('\\', '/', FCPATH  . 'public/uploads/appointment/plan/workoutplan/' . $workoutplan);
+			return $this->response->download($file, null);
+		}
+	}
+
+	public function download_prescription($prescription)
+	{
+		if ($prescription != '') {
+			//$file = $_SERVER['CONTEXT_DOCUMENT_ROOT'] . '/healthie4u/public/uploads/appointment/plan/workoutplan/' . $workoutplan;
+			$file = str_replace('\\', '/', FCPATH  . 'public/uploads/appointment/plan/prescription/' . $prescription);
+			return $this->response->download($file, null);
+		}
+	}
+
+	public function close()
+	{
+		$appointment_id  = $this->request->getPost('appointment_id');
+		$condition = ['appointment_id' => $appointment_id];
+
+		if ($appointment_id > 0) {
+			$update_data = [
+				'status' => 'Cancelled',
+				'updated_on' => date('Y-m-d'),
+				'updated_by' => session()->get('userid')
+			];
+
+			$id = $this->common_model->updateData('appointment', $update_data, $condition);
+			echo $id;
+		} else {
+			echo 0;
+		}
+	}
+
+
+
+	public function client_info()
+	{
+		$client_id = $this->request->getPost('client_id');
+		$result = [];
+		if ($client_id > 0) {
+
+			$clientData = $this->appointment_model->getClientInfo($client_id);
+
+			if (!empty($clientData)) {
+				$result['clientData'] = $clientData;
+				$result['outcome'] = 1;
+			} else {
+				$result['outcome'] = 0;
+			}
+		} else {
+			$result['outcome'] = 0;
+		}
+		echo json_encode($result);
+		die();
+	}
+
+
+
+
+	public function listcomment($id)
+	{
+
+		if ($this->session->has('doctor_id')) {
+			$data = [
+				'menutitle' => 'Comment',
+				'pagetitle' => 'Comment',
+				'breadcrumb' => '<ul class="page-breadcrumb"><li><i class="fa fa-home"></i><a href="' . base_url('mentor') . '">Home</a><i class="fa fa-angle-right"> </i> </li> <a href="' . base_url('mentor/appointment') . '">Appointment</a> <i class="fa fa-angle-right"> </i> </li>  <li>Manage Comment</li></ul>',
+				"appointment_id" => $id
+			];
+			$condition = ['appointment_id' => $id];
+			$appointmentcomment_Array = $this->appointment_model->getAppointmentComment($id);
+
+			$data['appointmentcomment'] = $appointmentcomment_Array;
+
+			echo view('mentor/appointment/comment', $data);
+		} else {
+			return view('mentor/index');
+		}
+	}
+	public function postcomment()
+	{
+		$comment_id = trim($this->request->getPost('comment_id'));
+		$appointment_id = trim($this->request->getPost('appointment_id'));
+		$comment = trim($this->request->getPost('comment'));
+		if ($comment_id > 0) {
+			$condition = ['comment_id' => $comment_id];
+			$update_data['comment'] = $comment;
+			$id = $this->common_model->updateData('appointmentcomment', $update_data, $condition);
+			if ($id > 0) {
+				echo 1;
+			} else {
+				echo 0;
+			}
+		} else {
+			$insert_data['appointment_id'] = $appointment_id;
+			$insert_data['date'] = date('Y-m-d H:i:s');
+			$insert_data['comment'] = $comment;
+			$insert_data['doctor_id'] = session()->get('doctor_id');
+			$id = $this->common_model->addData('appointmentcomment', $insert_data);
+			if ($id > 0) {
+				echo 1;
+			} else {
+				echo 0;
+			}
+		}
+	}
+	public function closecomment()
+	{
+		$comment_id  = $this->request->getPost('comment_id');
+		$condition = ['comment_id' => $comment_id];
+		if ($comment_id > 0) {
+			$id = $this->common_model->deleteAppointmentcomment($condition);
+			echo $id;
+		} else {
+			echo 0;
+		}
+	}
+
+	public function clientdashboard($id)
+    {
+        $session = session();
+        if ($session->has('doctor_id')) {
+            $db = \Config\Database::connect();
+            $clientRow = $db->query("SELECT * FROM client_profile WHERE client_id = " . (int)$id)->getRowArray();
+            
+            $data = [
+                'menutitle' => 'Client Dashboard',
+                'pagetitle' => 'Client Dashboard',
+                'client_id' => $id,
+                'clientDetails' => [
+                    (object)[
+                        'client_id' => $id,
+                        'client_name' => $clientRow ? $clientRow['client_name'] : 'Unknown'
+                    ]
+                ]
+            ];
+            echo view('mentor/appointment/clientdashboard', $data);
+        } else {
+            return view('mentor/index');
+        }
+    }
+
+    public function set_client_targets($client_id)
+    {
+        if (!$this->session->has('doctor_id')) {
+            return redirect()->to('mentor');
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('client_profile')->where('client_id', $client_id)->update([
+            'target_water'  => (int)$this->request->getPost('target_water'),
+            'target_sleep'  => (int)$this->request->getPost('target_sleep'),
+            'target_weight' => (float)$this->request->getPost('target_weight'),
+        ]);
+
+        model('App\Models\StepsTargetModel')->setTarget($client_id, (int)$this->request->getPost('target_steps'));
+        model('App\Models\CaloriesTargetModel')->setTarget($client_id, (int)$this->request->getPost('target_calorie'), 'intake');
+
+        return redirect()->to('mentor/appointment/clientdashboard/' . $client_id . '?targets_saved=1');
+    }
+}

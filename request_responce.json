@@ -1,0 +1,616 @@
+//send otp 
+
+http://localhost/healthie4u/apis/clientlogin/sendotp
+
+request - 
+{
+    "mobile_number" : "9874563210"
+}
+
+response -
+{
+    "status": "201",
+    "msg": "Otp Send Successfully",
+    "data": {
+        "OTP_ID": 14,
+        "OTP": 8564,
+        "Mobile Number": "9466325691" //9874563210
+    }
+}
+
+//resend otp 
+http://localhost/healthie4u/apis/clientlogin/resend
+
+request - 
+{
+    "otp_id" : "14",
+    "otp" :"8564",
+    "mobile_number" :"9874563210"
+}
+
+response -
+{
+    "status": true,
+    "msg": "OTP Resend Successfully",
+    "data": {
+        "RESENT_OTP": 1314
+    }
+}
+
+//verify otp
+
+http://localhost/healthie4u/apis/clientlogin/verify_otp
+
+request - 
+{
+    "otp_id" : "14",
+    "otp" :"8552",
+    "mobile_number" :"9874563210"
+}
+
+response -
+{
+    "status": true,
+    "msg": "OTP Verification Successfully",
+    "data": {
+        "OTP_ID": "14",
+        "OTP": "8552",
+        "TOCKEN": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+    }
+}
+
+
+//client logout
+http://localhost/healthie4u/apis/clientlogin/logout
+
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTgifV0.RJzxAvxHj9XX1EGRxCADgE9LXgFo8683ZJn9E9AhwOE"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Log Out Successful"
+}
+
+// about yourself
+http://localhost/healthie4u/apis/profile_info/profile
+
+request - 
+
+{
+    "client_name" : "test demo",
+    "client_email" : "test@gmail.com",
+    "client_gender" : "Male",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Profile Details added Successfully",
+    "data": {
+        "client_name": "test demo",
+        "client_email": "test@gmail.com",
+        "client_gender": "Male"
+    }
+}
+
+
+// add age
+
+http://localhost/healthie4u/apis/profile_info/addage
+
+request - 
+{
+    "age" : "25",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Age added Successfully",
+    "data": {
+        "age": "25"
+    }
+}
+
+//add height 
+http://localhost/healthie4u/apis/profile_info/addheight
+
+request - 
+{
+    "height" : "175",
+    "height_in" : "CM",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+
+response -
+{
+    "status": true,
+    "msg": "Height added Successfully",
+    "data": {
+        "height": "175",
+        "height_in": "CM"
+    }
+}
+
+//add weight
+
+http://localhost/healthie4u/apis/profile_info/addweight
+
+request - 
+{
+    "weight" : "70",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Weight added Successfully",
+    "data": {
+        "weight": "70"
+    }
+}
+
+//add diet
+
+http://localhost/healthie4u/apis/profile_info/adddiet
+
+request - 
+{
+    "diet" : "Veg",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Diet added Successfully",
+    "data": {
+        "diet": "Veg"
+    }
+}
+
+// list all medical condition 
+
+http://localhost/healthie4u/apis/profile_info/view_medical_condition
+
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Get Data Successfully",
+    "data": [
+        {
+            "medical_id": "1",
+            "title": "pcos"
+        },
+        {
+            "medical_id": "2",
+            "title": "pcos1"
+        }
+    ]
+}
+
+
+// add medical condition
+http://localhost/healthie4u/apis/profile_info/medical_condition
+
+request - 
+{
+    "medical_condition" : {
+        "1": "pcos",
+        "4": "pcos"
+    },
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Medical Condition added Successfully",
+    "data": {
+        "medical_condition": {
+            "1": "pcos",
+            "4": "pcos"
+        }
+    }
+}
+
+
+// list of all lifestyle
+
+http://localhost/healthie4u/apis/profile_info/view_lifestyle
+
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Get Data Successfully",
+    "data": [
+        {
+            "lifestyle_id": "1",
+            "name": "Good",
+            "description": "tst tees ",
+            "image": "#image",
+            "status": "Active",
+            "created_by": "1",
+            "created_on": "2023-09-15",
+            "updated_by": "1",
+            "updated_on": "2023-09-15"
+        }
+    ]
+}
+
+
+// add life style in profile 
+
+http://localhost/healthie4u/apis/profile_info/life_style
+
+
+request - 
+{   
+    "lifestyle_id" : "1",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Life Style added Successfully",
+    "data": {
+        "lifestyle_id": "1"
+    }
+}
+
+// list of all goals
+
+http://localhost/healthie4u/apis/profile_info/view_goals
+
+request - 
+{   
+   
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Get Goals Successfully",
+    "data": [
+        {
+            "goal_id": "1",
+            "name": "goaltest",
+            "description": "goaltest goaltest",
+            "image": "#goaltest",
+            "status": "Active",
+            "created_by": "1",
+            "created_on": "2023-09-15",
+            "updated_by": "1",
+            "updated_on": "2023-09-15"
+        }
+    ]
+}
+
+
+//add goles in profile
+http://localhost/healthie4u/apis/profile_info/add_goal
+request - 
+{   
+   "goal_id" : "1",
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "Goal added Successfully",
+    "data": {
+        "goal_id": "1"
+    }
+}
+
+
+// view profile 
+
+http://localhost/healthie4u/apis/profile_info/view_profile
+
+request - 
+{   
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+}
+
+response -
+{
+    "status": true,
+    "msg": "User Data",
+    "data": {
+        "0": {
+            "client_profile_id": "5",
+            "client_id": "19",
+            "client_number": "192317/19",
+            "client_profile_pic": "",
+            "client_name": "test demo",
+            "age": "25",
+            "height": "175",
+            "height_in": "CM",
+            "weight": "70",
+            "diet": "Veg",
+            "lifestyle_id": "1",
+            "goal_id": "1",
+            "client_email": "test@gmail.com",
+            "client_mobile_number": "9874563210",
+            "client_gender": "Male",
+            "status": "Active",
+            "created_by": "0",
+            "created_on": "0000-00-00",
+            "updated_by": "0",
+            "updated_on": "0000-00-00"
+        },
+        "medical_condition": [
+            {
+                "medical_id": "1"
+            },
+            {
+                "medical_id": "4"
+            }
+        ]
+    }
+}
+
+// update profile
+
+http://localhost/healthie4u/apis/profile_info/update_profile
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk",
+    "client_name": "test demo",
+    "client_email": "test@gmail.com",
+    "client_gender": "Male",
+    "age": "25",
+    "height": "175",
+    "height_in": "CM",
+    "weight": "70",
+    "diet": "Veg",
+    "lifestyle_id": "1",
+    "goal_id": "1",
+    "medical_condition" : {
+        "1": "pocs",
+        "2": "pocs"
+    }
+}
+
+
+response -
+{
+    "status": true,
+    "msg": "Profile Update Successfully",
+    "data": {
+        "client_name": "test demo",
+        "client_email": "test@gmail.com",
+        "client_gender": "Male",
+        "age": "25",
+        "height": "175",
+        "height_in": "CM",
+        "weight": "70",
+        "diet": "Veg",
+        "lifestyle_id": "1",
+        "created_on": "2023-09-18",
+        "created_by": "19",
+        "updated_on": "2023-09-18",
+        "updated_by": "19",
+        "medical_condition": {
+            "1": "pocs",
+            "2": "pocs"
+        }
+    }
+}
+
+// all testimonial list 
+
+http://localhost/healthie4u/apis/testimonial/testimonial_list
+
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk"
+    
+}
+
+response -
+
+{
+    "status": true,
+    "msg": "get Testimonial Successfully",
+    "data": [
+        {
+            "testimonial_id": "1",
+            "client_id": "18",
+            "description": "tes description descript iondescrip tiondesc riptiondescri ptiondes criptiond escrip tionde  scription",
+            "status": "Active",
+            "date": "2023-09-18",
+            "created_on": "2023-09-18",
+            "created_by": "18",
+            "updated_on": "2023-09-18",
+            "updated_by": "18",
+            "client_profile_id": "1",
+            "client_number": "189107/18",
+            "client_profile_pic": "",
+            "client_name": "18",
+            "age": "86",
+            "height": "63",
+            "height_in": "CM",
+            "weight": "98",
+            "diet": "veg",
+            "lifestyle_id": "2",
+            "goal_id": "2",
+            "client_email": "test@gmail.com",
+            "client_mobile_number": "test@gmail.co",
+            "client_gender": "Male"
+        },
+        {
+            "testimonial_id": "2",
+            "client_id": "18",
+            "description": "tes description descript iondescrip tiondesc riptiondescri ptiondes criptiond escrip tionde  scription",
+            "status": "Active",
+            "date": "2023-09-18",
+            "created_on": "2023-09-18",
+            "created_by": "18",
+            "updated_on": "2023-09-18",
+            "updated_by": "18",
+            "client_profile_id": "1",
+            "client_number": "189107/18",
+            "client_profile_pic": "",
+            "client_name": "18",
+            "age": "86",
+            "height": "63",
+            "height_in": "CM",
+            "weight": "98",
+            "diet": "veg",
+            "lifestyle_id": "2",
+            "goal_id": "2",
+            "client_email": "test@gmail.com",
+            "client_mobile_number": "test@gmail.co",
+            "client_gender": "Male"
+        }
+    ]
+}
+
+
+//add new testimonial
+
+http://localhost/healthie4u/apis/testimonial/addtestimonial
+
+
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk",
+    "description" : " description  description description description"
+    
+}
+
+response -
+{
+    "status": true,
+    "msg": "Testimonial added Successfully",
+    "data": {
+        "client_id": "19",
+        "description": " description  description description description",
+        "status": "Active",
+        "date": "2023-09-18",
+        "created_on": "2023-09-18",
+        "created_by": "19",
+        "updated_on": "2023-09-18",
+        "updated_by": "19"
+    }
+}
+
+
+//all plans list by category 
+http://localhost/healthie4u/apis/plans/plans_list
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk",
+    "category" : "category 1"
+    
+}
+
+
+response -
+{
+    "status": true,
+    "msg": "Get plans Successfully",
+    "data": [
+        {
+            "plan_id": "1",
+            "name": "name test",
+            "caption": "caption test",
+            "description": "description test",
+            "price": "200.00",
+            "validaty": "3",
+            "background_img": "#image",
+            "header_img": "#image",
+            "category": "category 1",
+            "status": "Active",
+            "created_on": "2023-09-15",
+            "created_by": "1",
+            "updated_on": "2023-09-15",
+            "updated_by": "1"
+        }
+    ]
+}
+
+
+//view play in Details
+
+http://localhost/healthie4u/apis/plans/view_plans
+
+request - 
+{
+    "tocken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.W3siY2xpZW50X2lkIjoiMTkifV0.eW8mFDnbk2rS5EAg-MqRA3_nu_jpnvUKwNF3Ki1WTfk",
+    "plan_id" : "1"
+    
+}
+response -
+{
+    "status": true,
+    "msg": "Get plans Successfully",
+    "data": {
+        "planData": [
+            {
+                "plan_id": "1",
+                "name": "name test",
+                "caption": "caption test",
+                "description": "description test",
+                "price": "200.00",
+                "validaty": "3",
+                "background_img": "#image",
+                "header_img": "#image",
+                "category": "category 1",
+                "status": "Active",
+                "created_on": "2023-09-15",
+                "created_by": "1",
+                "updated_on": "2023-09-15",
+                "updated_by": "1"
+            }
+        ],
+        "planFeatures": [
+            {
+                "pf_id": "1",
+                "plan_id": "1",
+                "name": "pf name",
+                "caption": "pf caption",
+                "image": "#image",
+                "status": "Active",
+                "created_on": "2023-09-15",
+                "created_by": "1",
+                "updated_on": "2023-09-15",
+                "updated_by": "1"
+            },
+            {
+                "pf_id": "2",
+                "plan_id": "1",
+                "name": "pf name",
+                "caption": "pf caption",
+                "image": "#image",
+                "status": "Active",
+                "created_on": "2023-09-15",
+                "created_by": "1",
+                "updated_on": "2023-09-15",
+                "updated_by": "1"
+            }
+        ]
+    }
+}

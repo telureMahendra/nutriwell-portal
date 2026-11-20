@@ -1,0 +1,209 @@
+
+        .portlet-client{
+          background: #FFFFFF !important;
+          padding: 15px !important;
+          border-radius: 8px 8px 8px 8px !important;
+        }
+
+
+        span.help-block {
+            color: #f30;
+        }
+
+        /* === Client View Card === */
+        .client-view-wrapper {
+            max-width: 960px;
+            margin: 20px auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .client-card {
+            background: #ffffff;
+            border-radius: 18px;
+            /*box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);*/
+            overflow: hidden;
+        }
+
+        .client-card-header {
+            display: flex;
+            align-items: flex-start;
+            padding: 24px 28px 20px 28px;
+            gap: 24px;
+        }
+
+        .client-avatar-wrap {
+            width: 96px;
+            height: 96px;
+            border-radius: 50% !important;
+            background: #3cc9c9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .client-avatar-wrap img {
+            width: 88px;
+            height: 88px;
+            border-radius: 50% !important;
+            object-fit: cover;
+        }
+
+        .client-metrics {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-column-gap: 12px;
+            grid-row-gap: 12px;
+        }
+
+        .metric-box {
+            border-radius: 12px !important;
+            padding: 20px 35px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            position: relative;
+            
+        }
+
+        .metric-title {
+            opacity: 0.9;
+        }
+
+        .metric-value {
+            display: block;
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            opacity: 0.85;
+            margin-left: 4px;
+        }
+
+        .metric-water {
+         background: #14c8f5; 
+         background-image: url(../img/water.png);
+         background-size: cover;
+         background-position: right;
+         background-repeat: no-repeat;
+
+       }
+        .metric-calorie {
+         background: #b765f5;
+         background-image: url(../img/Calorie.png);
+         background-size: auto;
+         background-position: right;
+         background-repeat: no-repeat; 
+
+       }
+        .metric-weight {
+         background: #f78a7a;
+         background-image: url(../img/weight.png);
+         background-size: cover;
+         background-position: right;
+         background-repeat: no-repeat; 
+
+       }
+        .metric-bmi {
+         background: #5c6bf5;
+         background-image: url(../img/bmi.png);
+         background-size: cover;
+         background-position: right;
+         background-repeat: no-repeat; 
+
+       }
+        .metric-steps {
+         background: #e1b753;
+         background-image: url(../img/steps.png);
+         background-size: cover;
+         background-position: right;
+         background-repeat: no-repeat; 
+
+       }
+        .metric-burned {
+         background: #6ac58a;
+         background-image: url(../img/burned.png) !important;
+         background-size: cover;
+         background-position: right;
+         background-repeat: no-repeat; 
+
+       }
+
+        .client-card-body {
+            border-top: 1px solid #f1f1f1;
+            padding: 24px 32px 28px;
+        }
+
+        .client-details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            column-gap: 40px;
+            row-gap: 18px;
+            font-size: 13px;
+        }
+
+        .detail-item { min-width: 0; }
+
+        .detail-label {
+            color: #ff7a2f;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            color: #333333;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+      /* Optional: fix Font Awesome icon sizing in metrics */
+.client-metrics .metric-box i {
+    margin-right: 5px;
+    font-size: 18px;
+    color: #555;
+    vertical-align: middle;
+}
+.close-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+
+        @media (max-width: 768px) {
+            .client-card-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .client-metrics {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .client-details-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                column-gap: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .client-metrics {
+                grid-template-columns: 1fr;
+            }
+            .client-details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    

@@ -1,0 +1,42 @@
+<?php
+namespace App\Models;
+use CodeIgniter\Model;
+
+class Booking_model extends Model
+{
+    public function getBookingList($tableName, $condition,$like,$perPage = null, $offset = null) {
+
+        //$perPage = 1;
+        //$offset = 0;
+
+
+        $builder = $this->db->table($tableName);
+
+        $builder->select('B.*, CP.client_name,CP.client_mobile_number, P.name, L.language AS language_name, C.city_name, CO.coupon_code,DO.doctor_name');
+        $builder->join('client_profile AS CP','CP.client_id = B.client_id');
+        $builder->join('plan AS P','P.plan_id = B.plan_id');
+        $builder->join('language AS L','L.language_id = B.language_id','left');
+        $builder->join('city AS C','C.city_id = B.city_id','left');
+        $builder->join('coupon AS CO','CO.coupon_id = B.coupon_id','left');
+        $builder->join('doctor AS DO','DO.doctor_id = B.doctor_id','left');
+        $builder->where($condition);
+        if (!empty($like)) {
+            $builder->groupStart();
+            $builder->orLike('CP.client_name', $like['CP.client_name']);
+            $builder->orLike('CP.client_mobile_number', $like['CP.client_mobile_number']);
+            $builder->groupEnd();
+        }
+        $builder->orderBy('B.booking_id', 'DESC');
+        $builder->limit($perPage, $offset);
+        $query = $builder->get();
+        if ($query->getResult()) {
+            return $query->getResult();
+        } else {
+            return [];
+        }
+    }
+
+
+
+   
+}

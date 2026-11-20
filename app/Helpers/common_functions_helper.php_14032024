@@ -1,0 +1,167 @@
+<?php
+define("PAGELIMIT",100);
+
+if (!function_exists('is_admin_logged_in')) {
+	function is_admin_logged_in()
+	{
+		$user = session()->get('userid');
+		$userrole = session()->get('userrole');
+		$isLogin = session()->get('is_login');
+
+		if (($user > 0) && (($userrole == 'Admin') || ($userrole == 'User') || ($userrole == 'SalesAgent'))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+
+if (!function_exists('is_doctor_logged_in')) {
+	function is_doctor_logged_in()
+	{
+
+		$user = session()->get('userid');
+		$userrole = session()->get('userrole');
+		$isLogin = session()->get('is_login');
+
+		if (($user > 0) && ($userrole == 'Doctor') || ($userrole == 'Dietitian') || ($userrole == 'Psychologist') || ($userrole == 'Fitness Trainer')) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+
+if (!function_exists('CheckAccess')) {
+	function CheckAccess($controllerName, $methodName)
+	{
+		$roleArray = session()->get('roleArray');
+		if (array_key_exists($controllerName, $roleArray)) {
+			$roleData = $roleArray[$controllerName];
+			if (in_array($methodName, $roleData)) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+if (!function_exists('hasAccess')) {
+	function hasAccess($controller, $methodName)
+	{
+		$username = session()->get('username');
+		$userrole = session()->get('userrole');
+		if ($username == "" && $userrole == "") {
+			header('location:' . base_url());
+			exit(0);
+		} else {
+			if ($methodName != "add_new_row") {
+				if (!CheckAccess($controller, $methodName)) {
+					header('location:' . base_url('home'));
+					exit(0);
+				}
+			}
+		}
+		//return null;
+	}
+}
+
+
+if (!function_exists('sendNotification')) {
+	function sendNotification($client_id, $title, $message, $registration_ids)
+	{
+		$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => 'https://fcm.googleapis.com/fcm/send',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS =>
+			//"to"=>"eVpFGhJXTQC2OrJbQ1fOQd:APA91bHMia6ybrpFDwX4EFFka-aOCVGZYDX_6Rcrey3NvRzt7spgep2sy3sgh1DC1KqjxOHoVEkDF3CxjGvpyBBD3Fx7Gp-0ikeAv8aJKqK33TnnfgNIqxnLAYuq7bm-OxdFEwf8rubD",
+			json_encode(
+				array(
+					"registration_ids" => $registration_ids,
+					"notification" => array("title" => $title, "body" => $message)
+				)
+			),
+			CURLOPT_HTTPHEADER => array(
+				'Authorization:key=AAAAe7EGZ0U:APA91bHIpeTm6u0DwoydTRydjrqcFvzhPkni_WirBPsZKgDNbM4EUkDAtLrJ7FTPtvFftXo_jilHtXLUrx1T7mTbsLMQQVQPDL3DxBMOMaWtJvCFn0v5JkgLa87X0WnoJVYTN5DVFtHA',
+				'Content-Type:application/json'
+			)
+		));
+
+		curl_setopt($curl, CURLOPT_TIMEOUT, 1);
+		curl_setopt($curl, CURLOPT_NOSIGNAL, 1);
+
+		// Set For Localhost Only
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+		$response = curl_exec($curl);
+
+		curl_close($curl);
+		//return $response;
+	}
+}
+
+
+// CCAVENUES
+define("_merchant_id", "2730685");
+define("_working_key", "04602A608FF2C78CB52F8E3A54A14046");
+define("_access_code", "AVNC96KH16AK95CNKA");
+
+//define("_redirect_url", base_url('payment/success'));
+//define("_cancel_url", base_url('payment/cancel'));
+
+define("_redirect_url", 'https://healthie4u.drrajeevpathakent.in/payment/success');
+define("_cancel_url", 'https://healthie4u.drrajeevpathakent.in/payment/cancel');
+
+https://healthie4u.drrajeevpathakent.in/
+define("_language", "EN");
+define("_currency", "INR");
+
+function encrypt($plainText, $key)
+{
+	$key = hextobin(md5($key));
+	$initVector = pack("C*", 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f);
+	$openMode = openssl_encrypt($plainText, 'AES-128-CBC', $key, OPENSSL_RAW_DATA, $initVector);
+	$encryptedText = bin2hex($openMode);
+	return $encryptedText;
+}
+
+function decrypt($encryptedText, $key)
+{
+	$key = hextobin(md5($key));
+	$initVector = pack("C*", 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f);
+	$encryptedText = hextobin($encryptedText);
+	$decryptedText = openssl_decrypt($encryptedText, 'AES-128-CBC', $key, OPENSSL_RAW_DATA, $initVector);
+	return $decryptedText;
+}
+//*********** Padding Function *********************
+function pkcs5_pad($plainText, $blockSize)
+{
+	$pad = $blockSize - (strlen($plainText) % $blockSize);
+	return $plainText . str_repeat(chr($pad), $pad);
+}
+//********** Hexadecimal to Binary function for php 4.0 version ********
+function hextobin($hexString)
+{
+	$length = strlen($hexString);
+	$binString = "";
+	$count = 0;
+	while ($count < $length) {
+		$subString = substr($hexString, $count, 2);
+		$packedString = pack("H*", $subString);
+		if ($count == 0) {
+			$binString = $packedString;
+		} else {
+			$binString .= $packedString;
+		}
+
+		$count += 2;
+	}
+	return $binString;
+}
